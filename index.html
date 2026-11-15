@@ -88,10 +88,22 @@
   .all p { font-family: var(--font-head); font-size: 20px; font-weight: 600; font-variant-numeric: tabular-nums; }
 
   /* one day */
-  #days { display: flex; flex-direction: column; gap: 28px; }
+  #days { display: flex; flex-direction: column; gap: 12px; }
   .day { background: var(--sheet); border-radius: 14px; padding: 16px 14px 14px; display: flex; flex-direction: column; gap: 12px; min-width: 0; }
   .day.fresh { box-shadow: 0 0 0 3px var(--sign); }
-  .day-head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 4px 12px; }
+  .day-head { margin: 0; font: inherit; }
+  .day-toggle { all: unset; box-sizing: border-box; width: 100%; cursor: pointer; display: grid; grid-template-columns: 18px minmax(0, 1fr) auto; column-gap: 8px; row-gap: 4px; align-items: baseline; border-radius: 6px; }
+  .day-toggle:focus-visible { outline: 3px solid var(--sign); outline-offset: 4px; }
+  .day-toggle .arrow { width: 9px; height: 9px; border-right: 2.5px solid var(--ink-soft); border-bottom: 2.5px solid var(--ink-soft); transform: rotate(-45deg); align-self: center; justify-self: center; }
+  .day-toggle[aria-expanded="true"] .arrow { transform: rotate(45deg) translate(-2px, -2px); }
+  .day-toggle .date { font: 600 19px/1.15 var(--font-head); }
+  .day-toggle .day-sum { font-size: 17px; }
+  .day-toggle .info { grid-column: 2 / -1; display: flex; flex-wrap: wrap; gap: 4px 8px; align-items: center; color: var(--ink-soft); font-size: 14.5px; }
+  .chip { display: inline-block; padding: 1px 8px; border-radius: 99px; border: 1.5px solid var(--rule); font: 600 12px var(--font-text); letter-spacing: 0.05em; text-transform: uppercase; color: var(--ink-soft); }
+  .chip.todo { border-color: var(--pause); color: var(--pause); }
+  .chip.done { border-color: var(--work); color: var(--work); }
+  .day-body, .inv-body { display: flex; flex-direction: column; gap: 12px; }
+  @media (prefers-reduced-motion: no-preference) { .day-toggle .arrow { transition: transform 0.15s ease; } }
   .day-sum { font-family: var(--font-head); font-size: 20px; font-weight: 600; font-variant-numeric: tabular-nums; white-space: nowrap; }
   .pill { display: inline-block; margin-left: 8px; padding: 1px 8px; border-radius: 99px; border: 1.5px solid var(--pause); color: var(--pause); font: 600 12px var(--font-text); letter-spacing: 0.06em; text-transform: uppercase; vertical-align: middle; }
   .note { color: var(--pause); font-size: 14.5px; }
@@ -131,6 +143,49 @@
   #manual { position: fixed; left: 0; right: 0; bottom: 0; z-index: 5; background: var(--sheet); border-top: 2px solid var(--sign); padding: 14px max(16px, env(safe-area-inset-right, 0px)) calc(14px + env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px)); display: flex; flex-direction: column; gap: 8px; }
   #manual textarea { width: 100%; height: 9em; font: 14px/1.4 ui-monospace, Menlo, Consolas, monospace; border-radius: 8px; border: 1.5px solid var(--rule); background: var(--paper); color: var(--ink); padding: 8px; }
 
+  /* on site, notes, added lines, backup */
+  .site { display: flex; flex-direction: column; gap: 4px; }
+  .site h3, .note-box label, .add-grid label { font: 600 13px var(--font-text); letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-soft); }
+  .site-row { all: unset; cursor: pointer; display: block; font-variant-numeric: tabular-nums; border-radius: 4px; }
+  .site-row:focus-visible { outline: 3px solid var(--sign); outline-offset: 2px; }
+  .site-row b { font-weight: 600; }
+  .site-row small { display: block; color: var(--ink-soft); font-size: 13.5px; }
+  .note-box { display: flex; flex-direction: column; gap: 4px; }
+  textarea.note-text { width: 100%; min-height: 3.2em; padding: 8px 10px; border-radius: 10px; border: 1.5px solid var(--rule); background: var(--sheet); color: var(--ink); font: 500 16px/1.35 var(--font-text); resize: vertical; }
+  textarea.note-text:focus-visible { outline: 3px solid var(--sign); outline-offset: 2px; }
+  .add-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px 8px; margin-top: 10px; }
+  .add-grid .wide { grid-column: 1 / -1; }
+  .add-grid input[type="text"] { width: 100%; min-height: 42px; }
+  .add-grid .field { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+  .linkish { all: unset; cursor: pointer; color: var(--pause); text-decoration: underline; border-radius: 3px; }
+  .linkish:focus-visible { outline: 3px solid var(--sign); outline-offset: 2px; }
+  .inner { border-top: 1px solid var(--rule); padding-top: 10px; }
+  .inner summary { font-size: 16px; }
+  .backup-row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+
+  /* invoice per job */
+  .inv { background: var(--sheet); border-radius: 14px; padding: 16px 14px 14px; display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+  .inv-pick { display: flex; flex-direction: column; gap: 6px; }
+  .inv-pick label, .art-grid label { font-size: 13px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-soft); font-weight: 600; }
+  select { min-height: 46px; padding: 8px 10px; border-radius: 10px; border: 1.5px solid var(--rule); background: var(--sheet); color: var(--ink); font: 600 17px var(--font-text); width: 100%; }
+  .check { display: flex; gap: 10px; align-items: center; font-weight: 500; }
+  .check input { width: 20px; height: 20px; accent-color: var(--sign); }
+  .icols, .iline { display: grid; grid-template-columns: 34px minmax(0, 1fr) 72px 30px; column-gap: 8px; align-items: start; }
+  .icols { font-size: 12px; letter-spacing: 0.07em; text-transform: uppercase; color: var(--ink-soft); font-weight: 600; padding-bottom: 6px; border-bottom: 1.5px solid var(--ink); }
+  .icols .n { text-align: right; }
+  .iline { padding: 9px 0; border-bottom: 1px solid var(--rule); }
+  .iline .art { font: 600 15px/1.35 var(--font-head); color: var(--ink-soft); font-variant-numeric: tabular-nums; }
+  .iline .qty { all: unset; cursor: pointer; text-align: right; font: 600 17px/1.35 var(--font-head); font-variant-numeric: tabular-nums; border-radius: 4px; }
+  .iline .unit { font: 500 17px/1.35 var(--font-head); color: var(--ink-soft); }
+  .iline .meta { grid-column: 2 / -1; color: var(--ink-soft); font-size: 13.5px; }
+  .iline.done .line-text, .iline.done .qty { color: var(--ink-soft); }
+  .iline.zero .line-text, .iline.zero .qty { color: var(--ink-soft); }
+  .iline.copied .line-text, .iline.copied .qty { color: var(--work); }
+  .iline .qty:focus-visible { outline: 3px solid var(--sign); outline-offset: 2px; }
+  .inv-sum { font-family: var(--font-head); font-size: 20px; font-weight: 600; font-variant-numeric: tabular-nums; }
+  .art-grid { display: grid; grid-template-columns: minmax(0, 1fr) 76px 92px; gap: 8px 8px; align-items: center; margin-top: 12px; }
+  .art-grid .what { font-weight: 600; }
+  .art-grid input[type="text"] { min-height: 40px; flex: none; width: 100%; }
   @media (min-width: 520px) {
     .scan-buttons { flex-direction: row; }
     .scan-buttons .btn.main { flex: 1 1 auto; }
@@ -186,12 +241,69 @@
     </div>
   </fieldset>
 
+  <section class="inv" id="inv" hidden aria-labelledby="invTitle">
+    <h2 class="day-head"><button class="day-toggle" id="invToggle" type="button" aria-expanded="false" aria-controls="invBody"><span class="arrow"></span><span class="date" id="invTitle">Invoice per job</span><span></span><span class="info" id="invInfo"></span></button></h2>
+    <div class="inv-body" id="invBody" hidden>
+    <div class="inv-pick">
+      <label for="invJob">Job</label>
+      <select id="invJob"></select>
+    </div>
+    <label class="check" for="invOpen"><input type="checkbox" id="invOpen" checked> Only lines not invoiced yet</label>
+    <div class="icols"><span>Art.</span><span>Benämning</span><span class="n">Antal</span><span></span></div>
+    <ol class="lines" id="invLines"></ol>
+    <p class="hint" id="invEmpty" hidden>Everything on this job is invoiced. Untick the box above to see it.</p>
+    <p class="inv-sum" id="invSum"></p>
+    <p class="hint">Tap a text or a number to copy it, then paste it into the row in Fortnox.</p>
+    <details class="inner" id="addBox">
+      <summary>Add a line: material, utlägg, extra work</summary>
+      <form class="add-grid" id="addForm">
+        <div class="field wide"><label for="addText">Benämning</label><input type="text" id="addText" maxlength="80" autocomplete="off" placeholder="Bränsle, spännband 6 st, ÄTA …"></div>
+        <div class="field"><label for="addQty">Antal</label><input type="text" id="addQty" inputmode="decimal" maxlength="10" value="1"></div>
+        <div class="field"><label for="addUnit">Enhet</label><input type="text" id="addUnit" maxlength="6" value="st" autocomplete="off"></div>
+        <div class="field"><label for="addPrice">À-pris, kr</label><input type="text" id="addPrice" inputmode="decimal" maxlength="10"></div>
+        <div class="wide"><button class="btn small" type="submit">Add the line to this job</button></div>
+      </form>
+    </details>
+    <div class="day-foot">
+      <button class="btn small" id="invExport" type="button">Export this job</button>
+      <span class="spacer"></span>
+      <button class="btn small" id="invMark" type="button">Mark as invoiced</button>
+    </div>
+    </div>
+  </section>
+
   <div class="all" id="all" hidden>
     <p id="allSum"></p>
-    <button class="btn small" id="copyAll" type="button">Copy all days</button>
+    <div class="day-foot">
+      <button class="btn small" id="exportAll" type="button">Export all days</button>
+      <button class="btn small" id="exportSite" type="button">Export site log</button>
+      <button class="btn small" id="copyAll" type="button">Copy all days</button>
+      <button class="btn small" id="foldAll" type="button">Open all days</button>
+    </div>
   </div>
 
   <section id="days" aria-label="Days"></section>
+
+  <details id="artBox">
+    <summary>Fortnox articles and prices</summary>
+    <p class="hint" style="margin-top:8px">Used on the invoice lines and in the exported file. Leave a box empty if you don't use it.</p>
+    <div class="art-grid">
+      <span></span><label>Article</label><label>Price, kr</label>
+      <span class="what">Körning, per hour</span><input type="text" id="artDrive" inputmode="numeric" maxlength="12" aria-label="Article for Körning"><input type="text" id="priceDrive" inputmode="decimal" maxlength="10" aria-label="Price per hour for Körning">
+      <span class="what">Framkörning, per km</span><input type="text" id="artKm" inputmode="numeric" maxlength="12" aria-label="Article for Framkörning"><input type="text" id="priceKm" inputmode="decimal" maxlength="10" aria-label="Price per km for Framkörning">
+      <span class="what">Montage, per hour</span><input type="text" id="artWork" inputmode="numeric" maxlength="12" aria-label="Article for Montage"><input type="text" id="priceWork" inputmode="decimal" maxlength="10" aria-label="Price per hour for Montage">
+    </div>
+  </details>
+
+  <details id="backupBox">
+    <summary>Backup</summary>
+    <p class="hint" style="margin-top:8px">Everything is only on this phone. A backup file holds your days, place names, added lines, notes and prices. Save one now and then, in Files or by mail to yourself.</p>
+    <div class="backup-row">
+      <button class="btn small" id="backupSave" type="button">Save a backup file</button>
+      <input class="sr" id="backupFile" type="file" accept=".json,application/json">
+      <label class="btn small" for="backupFile">Restore from a backup file</label>
+    </div>
+  </details>
 
   <details id="placesBox" hidden>
     <summary id="placesTitle">Places</summary>
@@ -10438,7 +10550,21 @@ const WorkTrackInvoice = (() => {
     return rows.filter((x) => x.qty > 0).map((x) => `${x.text}\t${comma(x.qty, 2)}\t${x.unit}`).join("\n");
   }
 
-  return { buildLines, asText, findPlace, metres, comma, NEAR };
+  // When you were on site: one entry per visit to a job (work on the same
+  // job with nothing but pauses in between). Exact times, not rounded.
+  function siteLog(day) {
+    const visits = [];
+    let cur = null;
+    for (const p of day.parts) {
+      if (p.kind !== "work") { cur = null; continue; }
+      if (cur && cur.project === p.project) { cur.to = p.to; cur.work += Math.max(0, p.to - p.from); }
+      else { cur = { project: p.project, from: p.from, to: p.to, work: Math.max(0, p.to - p.from) }; visits.push(cur); }
+    }
+    for (const v of visits) v.pause = Math.max(0, v.to - v.from - v.work);
+    return visits;
+  }
+
+  return { buildLines, asText, siteLog, findPlace, metres, comma, NEAR };
 })();
 if (typeof module === "object" && module.exports) module.exports = WorkTrackInvoice;
 
@@ -10506,7 +10632,11 @@ if (typeof module === "object" && module.exports) module.exports = WorkTrackScan
 
   // ---- what is kept on the phone ---------------------------------------
   const KEY = "worktrack-days-1";
-  const store = { days: {}, places: [], roundMin: 30 };   // days: start time -> the code's bytes as text
+  const store = { days: {}, places: [], roundMin: 30,     // days: start time -> the code's bytes as text
+    articles: { drive: { art: "", price: "" }, km: { art: "5", price: "5" }, work: { art: "", price: "" } },
+    invoiced: {},                                          // "day start|job" -> date it was invoiced
+    extras: [],                                            // lines added by hand: { id, job, date, text, qty, unit, price }
+    notes: {} };                                           // day start -> what you wrote about that day
   let kept = true;                                         // false if the browser will not keep anything
   function load() {
     try {
@@ -10515,8 +10645,26 @@ if (typeof module === "object" && module.exports) module.exports = WorkTrackScan
         if (o.days && typeof o.days === "object") for (const [k, v] of Object.entries(o.days)) if (typeof v === "string") store.days[k] = v;
         if (Array.isArray(o.places)) store.places = o.places.filter((p) => p && typeof p.name === "string" && isFinite(p.lat) && isFinite(p.lon)).map((p) => ({ name: p.name, lat: +p.lat, lon: +p.lon }));
         if ([30, 15, 1].includes(o.roundMin)) store.roundMin = o.roundMin;
+        if (o.articles && typeof o.articles === "object") for (const k of ["drive", "km", "work"]) {
+          const a = o.articles[k];
+          if (a && typeof a === "object") store.articles[k] = { art: String(a.art || "").slice(0, 12), price: String(a.price || "").slice(0, 10) };
+        }
+        if (o.invoiced && typeof o.invoiced === "object") for (const [k, v] of Object.entries(o.invoiced)) if (typeof v === "string") store.invoiced[k] = v;
+        takeExtras(o.extras);
+        if (o.notes && typeof o.notes === "object") for (const [k, v] of Object.entries(o.notes)) if (typeof v === "string" && v) store.notes[k] = v.slice(0, 500);
       }
     } catch (e) { kept = false; }
+  }
+  // Added lines from storage or a backup: only well-formed ones, each once.
+  function takeExtras(list) {
+    let n = 0;
+    if (!Array.isArray(list)) return n;
+    for (const x of list) {
+      if (!x || typeof x.id !== "string" || typeof x.text !== "string" || !isFinite(x.qty) || store.extras.some((e) => e.id === x.id)) continue;
+      store.extras.push({ id: x.id, job: String(x.job || ""), date: /^\d{4}-\d\d-\d\d$/.test(x.date) ? x.date : "2000-01-01", text: x.text.slice(0, 80), qty: +x.qty, unit: String(x.unit || "st").slice(0, 6), price: x.price === null || x.price === "" || !isFinite(x.price) ? null : +x.price });
+      n++;
+    }
+    return n;
   }
   function save() {
     try { localStorage.setItem(KEY, JSON.stringify(store)); kept = true; } catch (e) { kept = false; }
@@ -10548,6 +10696,7 @@ if (typeof module === "object" && module.exports) module.exports = WorkTrackScan
 
   const local = (day, t) => new Date((t + day.zoneMin * 60) * 1000);
   const dateTitle = (day) => { const d = local(day, day.start); return `${WEEK[d.getUTCDay()]} ${d.getUTCDate()} ${MONTH[d.getUTCMonth()]} ${d.getUTCFullYear()}`; };
+  const ddmmOf = (day) => { const d = local(day, day.start); return pad(d.getUTCDate()) + "/" + pad(d.getUTCMonth() + 1); };
   const clock = (day, t) => { const d = local(day, t); return pad(d.getUTCHours()) + ":" + pad(d.getUTCMinutes()); };
   const measured = (min) => (min >= 60 ? `${Math.floor(min / 60)} h ${min % 60} min` : `${min} min`);
   const hoursText = (h) => I.comma(h, 2);
@@ -10566,6 +10715,7 @@ if (typeof module === "object" && module.exports) module.exports = WorkTrackScan
 
   // ---- drawing the page ---------------------------------------------------
   let fresh = null;       // the day just added, shown with a ring
+  const openDays = new Set();   // the days that are folded open (the others show one summary row)
   let removing = null;    // the day whose Remove button was pressed once
 
   // Places on this day that have no name yet, each asked for once.
@@ -10583,14 +10733,32 @@ if (typeof module === "object" && module.exports) module.exports = WorkTrackScan
 
   function dayBlock(day) {
     const out = linesOf(day);
-    const box = el("article", "day" + (fresh === day.key ? " fresh" : ""));
+    let box = el("article", "day" + (fresh === day.key ? " fresh" : ""));
     box.id = "day-" + day.key;
 
-    const head = el("div", "day-head");
-    const h = el("h2", "", dateTitle(day));
-    if (day.example) h.appendChild(el("span", "pill", "Example"));
-    head.append(h, el("p", "day-sum", `${hoursText(out.hours)} h · ${out.km} km`));
-    box.appendChild(head);
+    // The summary row: tap it to fold the day open or shut.
+    const open = day.example || openDays.has(day.key);
+    const head = el("h2", "day-head"), toggle = el("button", "day-toggle");
+    toggle.type = "button"; toggle.setAttribute("aria-expanded", open ? "true" : "false"); toggle.setAttribute("aria-controls", "body-" + day.key);
+    const info = el("span", "info");
+    const jobs = [...new Set(out.rows.map((r) => r.project || "No project"))];
+    if (jobs.length) info.appendChild(el("span", "jobs", jobs.join(", ")));
+    if (day.example) info.appendChild(el("span", "pill", "Example"));
+    else {
+      const keys = [...new Set(out.rows.map((r) => day.key + "|" + (r.project || "")))], billed = keys.filter((k) => store.invoiced[k]).length;
+      const missing = unnamed(day).length;
+      if (missing) info.appendChild(el("span", "chip todo", missing === 1 ? "Name 1 place" : `Name ${missing} places`));
+      if (keys.length && billed === keys.length) info.appendChild(el("span", "chip done", "Invoiced"));
+      else if (billed) info.appendChild(el("span", "chip", "Partly invoiced"));
+      if (store.notes[day.key]) info.appendChild(el("span", "chip note-chip", "Note"));
+    }
+    toggle.append(el("span", "arrow"), el("span", "date", dateTitle(day)), el("span", "day-sum", `${hoursText(out.hours)} h · ${out.km} km`), info);
+    if (!day.example) toggle.addEventListener("click", () => { if (openDays.has(day.key)) openDays.delete(day.key); else openDays.add(day.key); removing = null; render(); });
+    head.appendChild(toggle);
+    const outer = box;
+    outer.appendChild(head);
+    box = el("div", "day-body"); box.id = "body-" + day.key; box.hidden = !open;
+    outer.appendChild(box);
     if (day.example) box.appendChild(el("p", "hint", "This is what a day looks like. It goes away when you add your first day."));
     if (day.summed) box.appendChild(el("p", "note", "This day had a great many stretches, so the watch added them up per job. Hours and kilometres are exact; the times of day are not."));
     else if (!day.hasPlaces && day.parts.some((p) => p.kind === "drive")) box.appendChild(el("p", "note", "This day was too long for the code to hold where each drive began and ended. Add the place names to the lines by hand."));
@@ -10638,6 +10806,32 @@ if (typeof module === "object" && module.exports) module.exports = WorkTrackScan
       box.appendChild(ask);
     });
 
+    // When you were on each site, to the minute: your own record next to the site's log.
+    const visits = I.siteLog(day);
+    if (visits.length && !day.summed) {
+      const site = el("div", "site");
+      site.appendChild(el("h3", "", "On site"));
+      for (const v of visits) {
+        const text = `${v.project || "No project"} ${clock(day, v.from)}–${clock(day, v.to)}`;
+        const b = el("button", "site-row"); b.type = "button"; b.title = "Copy";
+        b.append(el("b", "", text), el("small", "", `${measured(Math.round(v.work / 60))} work` + (v.pause >= 60 ? `, ${measured(Math.round(v.pause / 60))} pause` : "")));
+        b.addEventListener("click", () => copy(`${ddmmOf(day)} ${text}`, () => say("ok", `Copied: ${ddmmOf(day)} ${text}`)));
+        site.appendChild(b);
+      }
+      box.appendChild(site);
+    }
+    if (!day.example) {
+      const nb = el("div", "note-box"), id = "note-" + day.key;
+      const lab = el("label", "", "Note for this day"); lab.htmlFor = id;
+      const ta = el("textarea", "note-text"); ta.id = id; ta.maxLength = 500; ta.placeholder = "What was done, who you met, anything to remember"; ta.value = store.notes[day.key] || "";
+      ta.addEventListener("change", () => { const v = ta.value.trim(); if (v) store.notes[day.key] = v; else delete store.notes[day.key]; save(); say("ok", v ? "Note saved." : "Note removed.");
+        // show it on the folded row, without redrawing the page under your finger
+        const old = info.querySelector(".note-chip"); if (old) old.remove();
+        if (v) info.appendChild(el("span", "chip note-chip", "Note")); });
+      nb.append(lab, ta);
+      box.appendChild(nb);
+    }
+
     const foot = el("div", "day-foot");
     const all = el("button", "btn small", "Copy this day"); all.type = "button";
     all.addEventListener("click", () => copy(I.asText(out.rows), () => flash(all, "Copied")));
@@ -10647,7 +10841,7 @@ if (typeof module === "object" && module.exports) module.exports = WorkTrackScan
       if (removing === day.key) {
         const yes = el("button", "btn small danger", "Yes, remove"), no = el("button", "btn small", "Keep");
         yes.type = no.type = "button";
-        yes.addEventListener("click", () => { delete store.days[day.key]; removing = null; save(); render(); say("ok", "Removed " + dateTitle(day) + ". It is still on the watch."); });
+        yes.addEventListener("click", () => { delete store.days[day.key]; delete store.notes[day.key]; removing = null; save(); render(); say("ok", "Removed " + dateTitle(day) + ". It is still on the watch."); });
         no.addEventListener("click", () => { removing = null; render(); });
         foot.append(yes, no);
       } else {
@@ -10657,7 +10851,7 @@ if (typeof module === "object" && module.exports) module.exports = WorkTrackScan
       }
     }
     box.appendChild(foot);
-    return box;
+    return outer;
   }
 
   function namePlace(point, name) {
@@ -10667,17 +10861,234 @@ if (typeof module === "object" && module.exports) module.exports = WorkTrackScan
     save(); render(); say("ok", `Saved the place ${name}.`);
   }
 
+  // ---- invoice per job ------------------------------------------------------
+  const ARTKEY = { drive: "drive", km: "km", work: "work" };
+  const jobName = (j) => j || "No project";
+  const num = (text) => { const v = parseFloat(String(text).replace(/\s/g, "").replace(",", ".")); return isFinite(v) ? v : null; };
+  const money = (v) => v.toFixed(2).replace(".", ",").replace(/\B(?=(\d{3})+(?!\d))/g, " ");
+  const isoDate = (day) => { const d = local(day, day.start); return d.getUTCFullYear() + "-" + pad(d.getUTCMonth() + 1) + "-" + pad(d.getUTCDate()); };
+  let invJob = null, marking = false, invShown = false;
+
+  // Every invoice row of every day, with its job, article and price.
+  function allRows(list) {
+    const out = [];
+    for (const day of list) {
+      for (const row of linesOf(day).rows) {
+        const a = store.articles[ARTKEY[row.kind]] || { art: "", price: "" };
+        const price = num(a.price);
+        out.push({ day, date: isoDate(day), when: day.start, job: row.project || "", row, key: day.key + "|" + (row.project || ""), art: a.art, price, amount: price === null ? null : Math.round(row.qty * price * 100) / 100 });
+      }
+    }
+    for (const x of store.extras) {
+      out.push({ extra: x, date: x.date, when: Date.parse(x.date + "T23:59:00Z") / 1000, job: x.job, row: { kind: "extra", text: x.text, qty: x.qty, unit: x.unit }, key: "x|" + x.id, art: "", price: x.price, amount: x.price === null ? null : Math.round(x.qty * x.price * 100) / 100 });
+    }
+    return out.sort((a, b) => (a.date < b.date ? -1 : a.date > b.date ? 1 : 0));    // by date; the order within a day stays
+  }
+
+  function renderInvoice(list) {
+    const rows = allRows(list), jobs = [...new Set(rows.map((r) => r.job))];
+    $("inv").hidden = jobs.length === 0;
+    if (!jobs.length) return;
+    // jobs with lines still to invoice first, the job seen most recently first
+    const open = (j) => rows.some((r) => r.job === j && !store.invoiced[r.key]);
+    const lastSeen = (j) => Math.max(...rows.filter((r) => r.job === j).map((r) => r.when));
+    jobs.sort((a, b) => (open(b) - open(a)) || (lastSeen(b) - lastSeen(a)));
+    if (invJob === null || !jobs.includes(invJob)) invJob = jobs[0];
+    const waiting = jobs.filter(open);
+    const info = $("invInfo");
+    info.textContent = "";
+    info.appendChild(waiting.length ? el("span", "chip todo", waiting.length === 1 ? "1 job to invoice" : `${waiting.length} jobs to invoice`) : el("span", "chip done", "All invoiced"));
+    if (waiting.length) info.appendChild(el("span", "jobs", waiting.map(jobName).join(", ")));
+    $("invToggle").setAttribute("aria-expanded", invShown ? "true" : "false");
+    $("invBody").hidden = !invShown;
+    const sel = $("invJob");
+    sel.textContent = "";
+    for (const j of jobs) { const o = el("option", "", jobName(j) + (open(j) ? "" : " (invoiced)")); o.value = j; o.selected = j === invJob; sel.appendChild(o); }
+
+    const onlyOpen = $("invOpen").checked;
+    const shown = rows.filter((r) => r.job === invJob && (!onlyOpen || !store.invoiced[r.key]));
+    const ol = $("invLines");
+    ol.textContent = "";
+    for (const r of shown) {
+      const done = store.invoiced[r.key];
+      const li = el("li", "iline" + (done ? " done" : "") + (r.row.qty > 0 ? "" : " zero"));
+      const text = el("button", "line-text", r.row.text); text.type = "button"; text.title = "Copy the text";
+      const qtyText = I.comma(r.row.qty, 2);
+      const qty = el("button", "qty", qtyText); qty.type = "button"; qty.title = "Copy the number";
+      const flashRow = () => { li.classList.add("copied"); setTimeout(() => li.classList.remove("copied"), 1400); };
+      text.addEventListener("click", () => copy(r.row.text, () => { flashRow(); say("ok", "Copied: " + r.row.text); }));
+      qty.addEventListener("click", () => copy(qtyText, () => { flashRow(); say("ok", "Copied: " + qtyText); }));
+      li.append(el("span", "art", r.art || "–"), text, qty, el("span", "unit", r.row.unit));
+      const bits = [];
+      if (r.price !== null) bits.push(`à ${money(r.price)} kr = ${money(r.amount)} kr`);
+      if (!(r.row.qty > 0)) bits.push("rounds to nothing, left out");
+      if (done) bits.push("invoiced " + done);
+      if (r.extra) bits.unshift("added by you " + r.extra.date.slice(8) + "/" + r.extra.date.slice(5, 7));
+      if (bits.length || r.extra) {
+        const meta = el("span", "meta", bits.join(" · "));
+        if (r.extra && !done) {
+          const rm = el("button", "linkish", "Remove"); rm.type = "button";
+          rm.addEventListener("click", () => { store.extras = store.extras.filter((e) => e.id !== r.extra.id); delete store.invoiced[r.key]; save(); render(); say("ok", "Removed the line " + r.extra.text + "."); });
+          meta.append(" · ", rm);
+        }
+        li.appendChild(meta);
+      }
+      ol.appendChild(li);
+    }
+    $("invEmpty").hidden = shown.length > 0;
+    const counted = shown.filter((r) => r.row.qty > 0);
+    const hours = counted.filter((r) => r.row.unit === "h").reduce((s, r) => s + r.row.qty, 0);
+    const km = counted.filter((r) => r.row.unit === "km").reduce((s, r) => s + r.row.qty, 0);
+    const priced = counted.every((r) => r.amount !== null);
+    const total = counted.reduce((s, r) => s + (r.amount || 0), 0);
+    $("invSum").textContent = shown.length ? `${I.comma(hours, 2)} h · ${km} km` + (counted.length && priced ? ` · ${money(total)} kr excl. moms` : "") : "";
+    const anyOpen = shown.some((r) => !store.invoiced[r.key]);
+    $("invExport").disabled = counted.length === 0;
+    const mark = $("invMark");
+    mark.hidden = shown.length === 0;
+    mark.textContent = marking ? (anyOpen ? "Yes, mark as invoiced" : "Yes, mark as not invoiced") : (anyOpen ? "Mark as invoiced" : "Mark as not invoiced");
+    mark.classList.toggle("danger", marking);
+  }
+
+  function shownRows() {
+    const onlyOpen = $("invOpen").checked;
+    return allRows(days()).filter((r) => r.job === invJob && (!onlyOpen || !store.invoiced[r.key]));
+  }
+
+  // The rows as a file Excel and Numbers open: semicolons between columns, comma decimals.
+  function csv(rows) {
+    const cell = (v) => { const t = String(v === null || v === undefined ? "" : v); return /[";\n]/.test(t) ? '"' + t.replace(/"/g, '""') + '"' : t; };
+    const lines = [["Datum", "Projekt", "Artikel", "Benämning", "Antal", "Enhet", "À-pris", "Belopp"].join(";")];
+    for (const r of rows) if (r.row.qty > 0) lines.push([r.date, jobName(r.job), r.art, r.row.text, I.comma(r.row.qty, 2), r.row.unit, r.price === null ? "" : I.comma(r.price, 2), r.amount === null ? "" : I.comma(r.amount, 2)].map(cell).join(";"));
+    return lines.join("\r\n") + "\r\n";
+  }
+
+  // Hand a file to the phone: the share sheet (Save to Files, Mail...), or a download.
+  async function giveFile(name, text, type) {
+    type = type || "text/csv";
+    const blob = new Blob([(type === "text/csv" ? "\ufeff" : "") + text], { type });
+    try {
+      const file = new File([blob], name, { type });
+      if (navigator.canShare && navigator.canShare({ files: [file] })) { await navigator.share({ files: [file], title: name }); return "shared"; }
+    } catch (e) { if (e && e.name === "AbortError") return "cancelled"; }
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob); a.download = name;
+    document.body.appendChild(a); a.click();
+    setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 4000);
+    return "downloaded";
+  }
+  const fileSafe = (t) => t.replace(/[^\p{L}\p{N}]+/gu, "-").replace(/^-+|-+$/g, "") || "jobb";
+  async function exportRows(rows, name) {
+    if (!rows.some((r) => r.row.qty > 0)) { say("error", "Nothing to export."); return; }
+    const how = await giveFile(name, csv(rows));
+    if (how !== "cancelled") say("ok", "Exported " + name + ". It opens in Excel or Numbers.");
+  }
+
+  $("invToggle").addEventListener("click", () => { invShown = !invShown; marking = false; render(); });
+  $("invJob").addEventListener("change", () => { invJob = $("invJob").value; marking = false; render(); });
+  $("invOpen").addEventListener("change", () => { marking = false; render(); });
+  $("invExport").addEventListener("click", () => {
+    const rows = shownRows(), d = rows.length ? rows[0].date : "";
+    exportRows(rows, `WorkTrack-${fileSafe(jobName(invJob))}-${d}.csv`);
+  });
+  $("exportAll").addEventListener("click", () => {
+    const list = days();
+    exportRows(allRows(list), `WorkTrack-all-${list.length ? isoDate(list[0]) : ""}.csv`);
+  });
+  // ---- a line added by hand (material, utlägg, extra work) -----------------------
+  $("addForm").addEventListener("submit", (e) => {
+    e.preventDefault();
+    const text = $("addText").value.trim(), qty = num($("addQty").value), priceText = $("addPrice").value.trim(), price = priceText ? num(priceText) : null;
+    if (!text) { say("error", "Type what the line is for first."); return; }
+    if (qty === null || !(qty > 0)) { say("error", "Type the quantity as a number, like 1 or 2,5."); return; }
+    if (priceText && price === null) { say("error", "Type the price as a number, like 450 or 5,50."); return; }
+    const now = new Date();
+    store.extras.push({ id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6), job: invJob || "", date: now.getFullYear() + "-" + pad(now.getMonth() + 1) + "-" + pad(now.getDate()), text: text.slice(0, 80), qty, unit: ($("addUnit").value.trim() || "st").slice(0, 6), price });
+    $("addText").value = ""; $("addQty").value = "1"; $("addPrice").value = "";
+    save(); render(); say("ok", `Added to ${jobName(invJob)}: ${text}.`);
+  });
+
+  // ---- the site log as a file ------------------------------------------------------
+  $("exportSite").addEventListener("click", async () => {
+    const list = days(), hm = (secs) => { const m = Math.round(secs / 60); return Math.floor(m / 60) + ":" + pad(m % 60); };
+    const cell = (v) => { const t = String(v); return /[";\n]/.test(t) ? '"' + t.replace(/"/g, '""') + '"' : t; };
+    const lines = [["Datum", "Projekt", "Ankom", "Lämnade", "På plats", "Arbete", "Paus", "Notering"].join(";")];
+    for (const day of list) {
+      if (day.summed) { lines.push([isoDate(day), "(times added up by the watch)", "", "", "", "", "", store.notes[day.key] || ""].map(cell).join(";")); continue; }
+      I.siteLog(day).forEach((v, i) => lines.push([isoDate(day), jobName(v.project), clock(day, v.from), clock(day, v.to), hm(v.to - v.from), hm(v.work), hm(v.pause), i === 0 ? store.notes[day.key] || "" : ""].map(cell).join(";")));
+    }
+    if (lines.length < 2) { say("error", "Nothing to export."); return; }
+    const name = `WorkTrack-site-log-${isoDate(list[0])}.csv`;
+    if (await giveFile(name, lines.join("\r\n") + "\r\n") !== "cancelled") say("ok", "Exported " + name + ".");
+  });
+
+  // ---- backup ------------------------------------------------------------------------
+  $("backupSave").addEventListener("click", async () => {
+    const now = new Date(), name = `WorkTrack-backup-${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}.json`;
+    if (await giveFile(name, JSON.stringify({ worktrackBackup: 1, saved: now.toISOString(), ...store }), "application/json") !== "cancelled") say("ok", "Saved " + name + ". Keep it in Files or mail it to yourself.");
+  });
+  $("backupFile").addEventListener("change", async (e) => {
+    const f = e.target.files && e.target.files[0]; e.target.value = "";
+    if (!f) return;
+    let o;
+    try { o = JSON.parse(await f.text()); } catch (err) { o = null; }
+    if (!o || o.worktrackBackup !== 1 || typeof o.days !== "object") { say("error", "That is not a WorkTrack backup file."); return; }
+    let nDays = 0, nPlaces = 0;
+    for (const [k, v] of Object.entries(o.days || {})) {
+      if (typeof v !== "string" || k in store.days) continue;
+      try { C.unpackDay(C.fromBase64(v)); store.days[k] = v; nDays++; } catch (err) { /* not a day */ }
+    }
+    for (const p of Array.isArray(o.places) ? o.places : []) {
+      if (!p || typeof p.name !== "string" || !isFinite(p.lat) || !isFinite(p.lon)) continue;
+      if (store.places.some((q) => I.metres(q, p) < 50)) continue;
+      store.places.push({ name: p.name.slice(0, 40), lat: +p.lat, lon: +p.lon }); nPlaces++;
+    }
+    const nLines = takeExtras(o.extras);
+    for (const [k, v] of Object.entries(o.invoiced || {})) if (typeof v === "string" && !(k in store.invoiced)) store.invoiced[k] = v;
+    for (const [k, v] of Object.entries(o.notes || {})) if (typeof v === "string" && v && !store.notes[k]) store.notes[k] = v.slice(0, 500);
+    if (o.articles && typeof o.articles === "object") for (const kind of ["drive", "km", "work"]) {
+      const a = o.articles[kind], mine = store.articles[kind];
+      if (a && typeof a === "object") { if (!mine.art && a.art) mine.art = String(a.art).slice(0, 12); if (!mine.price && a.price) mine.price = String(a.price).slice(0, 10); }
+    }
+    save(); render();
+    say("ok", `Restored: ${nDays} ${nDays === 1 ? "day" : "days"}, ${nPlaces} ${nPlaces === 1 ? "place" : "places"}, ${nLines} added ${nLines === 1 ? "line" : "lines"}. Nothing you already had was changed.`);
+  });
+
+  $("invMark").addEventListener("click", () => {
+    if (!marking) { marking = true; render(); return; }
+    const rows = shownRows(), anyOpen = rows.some((r) => !store.invoiced[r.key]);
+    const now = new Date(), today = pad(now.getDate()) + "/" + pad(now.getMonth() + 1);
+    for (const r of rows) { if (anyOpen) store.invoiced[r.key] = today; else delete store.invoiced[r.key]; }
+    marking = false; save(); render();
+    say("ok", jobName(invJob) + (anyOpen ? " marked as invoiced." : " marked as not invoiced."));
+  });
+  for (const [id, kind, field] of [["artDrive", "drive", "art"], ["priceDrive", "drive", "price"], ["artKm", "km", "art"], ["priceKm", "km", "price"], ["artWork", "work", "art"], ["priceWork", "work", "price"]]) {
+    $(id).addEventListener("change", () => {
+      const v = $(id).value.trim();
+      if (field === "price" && v && num(v) === null) { $(id).value = store.articles[kind].price; say("error", "Type the price as a number, like 450 or 5,50."); return; }
+      store.articles[kind][field] = v; save(); render();
+    });
+  }
+
   function render() {
     const list = days(), real = list.length > 0;
     const shown = real ? list : [EXAMPLE];
     const holder = $("days");
     holder.textContent = "";
-    for (const d of shown) holder.appendChild(dayBlock(d));
+    for (const d of shown.slice().reverse()) holder.appendChild(dayBlock(d));      // newest on top
+    const anyOpen = list.some((d) => openDays.has(d.key));
+    $("foldAll").hidden = list.length < 2;
+    $("foldAll").textContent = anyOpen ? "Close all days" : "Open all days";
 
-    $("all").hidden = list.length < 2;
-    if (list.length >= 2) {
+    $("all").hidden = list.length < 1;
+    $("copyAll").hidden = list.length < 2;
+    if (list.length >= 1) {
       const sums = list.map(linesOf);
-      $("allSum").textContent = `${list.length} days · ${hoursText(sums.reduce((s, o) => s + o.hours, 0))} h · ${sums.reduce((s, o) => s + o.km, 0)} km`;
+      $("allSum").textContent = `${list.length} ${list.length === 1 ? "day" : "days"} · ${hoursText(sums.reduce((s, o) => s + o.hours, 0))} h · ${sums.reduce((s, o) => s + o.km, 0)} km`;
+    }
+    renderInvoice(list);
+    for (const [id, kind, field] of [["artDrive", "drive", "art"], ["priceDrive", "drive", "price"], ["artKm", "km", "art"], ["priceKm", "km", "price"], ["artWork", "work", "art"], ["priceWork", "work", "price"]]) {
+      if (document.activeElement !== $(id)) $(id).value = store.articles[kind][field];
     }
     $("placesBox").hidden = store.places.length === 0;
     $("placesTitle").textContent = `Places (${store.places.length})`;
@@ -10728,7 +11139,7 @@ if (typeof module === "object" && module.exports) module.exports = WorkTrackScan
       try { day = C.unpackDay(hit.bytes); } catch (e) { say("error", e.message); return; }
       const key = String(day.start), had = key in store.days;
       store.days[key] = C.toBase64(hit.bytes);
-      fresh = key; removing = null;
+      fresh = key; removing = null; openDays.add(key);
       save(); render();
       say("ok", (had ? "Read again: " : "Added ") + dateTitle(day) + ".");
       const block = $("day-" + key);
@@ -10739,9 +11150,15 @@ if (typeof module === "object" && module.exports) module.exports = WorkTrackScan
   for (const id of ["cam", "pick"]) $(id).addEventListener("change", (e) => { const f = e.target.files && e.target.files[0]; e.target.value = ""; addPhoto(f); });
 
   for (const r of document.querySelectorAll('input[name="round"]')) r.addEventListener("change", () => { if (r.checked) { store.roundMin = Number(r.value); save(); render(); } });
+  $("foldAll").addEventListener("click", () => {
+    const list = days();
+    if (list.some((d) => openDays.has(d.key))) openDays.clear(); else for (const d of list) openDays.add(d.key);
+    render();
+  });
   $("copyAll").addEventListener("click", () => copy(days().map((d) => I.asText(linesOf(d).rows)).filter(Boolean).join("\n"), () => flash($("copyAll"), "Copied")));
 
   load();
+  { const first = days(); if (first.length === 1) openDays.add(first[0].key); }
   render();
   save();
   if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(() => {});
