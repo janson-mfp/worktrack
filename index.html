@@ -68,7 +68,6 @@
   .scan-head { display: flex; gap: 14px; align-items: center; }
   .scan-head svg { flex: none; width: 76px; height: 76px; }
   .steps { margin: 0; padding-left: 1.3em; display: flex; flex-direction: column; gap: 2px; color: var(--ink); }
-  .scan-buttons { display: flex; flex-direction: column; gap: 8px; }
   #status { font-weight: 500; }
   #status:empty { display: none; }
   #status[data-kind="ok"] { color: var(--work); }
@@ -84,8 +83,6 @@
   .seg input:checked + span { border-color: var(--sign); color: var(--sign); font-weight: 600; box-shadow: inset 0 0 0 1px var(--sign); }
 
   /* all days together */
-  .all { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; }
-  .all p { font-family: var(--font-head); font-size: 20px; font-weight: 600; font-variant-numeric: tabular-nums; }
 
   /* one day */
   #days { display: flex; flex-direction: column; gap: 12px; }
@@ -335,21 +332,131 @@
   .sw.stop { background: var(--sheet); border: 3px solid var(--pause); border-radius: 50%; width: 12px; height: 12px; }
   .sw.way { width: 22px; height: 0; background: none; border-top: 3.5px dotted var(--sign); }
 
-  @media (min-width: 520px) {
-    .scan-buttons { flex-direction: row; }
-    .scan-buttons .btn.main { flex: 1 1 auto; }
-  }
+
+  /* ---- one screen at a time: five tabs at the bottom, settings behind the gear ---- */
+  .top { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+  .icon-btn { all: unset; box-sizing: border-box; flex: none; width: 46px; height: 46px; border-radius: 12px; border: 1.5px solid var(--rule); background: var(--sheet); color: var(--ink-soft); display: inline-flex; align-items: center; justify-content: center; cursor: pointer; }
+  .icon-btn:focus-visible, .tab:focus-visible, .cal-cell:focus-visible { outline: 3px solid var(--sign); outline-offset: 2px; }
+  .icon-btn svg { width: 24px; height: 24px; }
+  .icon-btn[aria-expanded="true"], .icon-btn[aria-pressed="true"] { border-color: var(--sign); color: var(--sign); }
+  .view { display: none; flex-direction: column; gap: 18px; min-width: 0; }
+  .view.on, html.flat .view { display: flex; }
+  html:not(.flat) .tab-head { display: none; }
+  html:not(.flat) .page { padding-bottom: calc(92px + env(safe-area-inset-bottom, 0px)); }
+  html.flat .tabs, html.flat #moreBtn { display: none; }
+  .empty { padding: 24px 8px; text-align: center; }
+  .tabs { position: fixed; left: 0; right: 0; bottom: 0; z-index: 40; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); background: var(--sheet); border-top: 1px solid var(--rule);
+    padding: 4px max(4px, env(safe-area-inset-right, 0px)) calc(4px + env(safe-area-inset-bottom, 0px)) max(4px, env(safe-area-inset-left, 0px)); }
+  .tab { all: unset; box-sizing: border-box; position: relative; min-height: 54px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; border-radius: 10px; font: 500 12px var(--font-text); color: var(--ink-soft); cursor: pointer; }
+  .tab svg { width: 24px; height: 24px; }
+  .tab[aria-current="page"] { color: var(--sign); font-weight: 600; }
+  .tab .badge { position: absolute; top: 3px; left: calc(50% + 6px); min-width: 18px; height: 18px; padding: 0 4px; border-radius: 9px; background: var(--pause); color: var(--sheet); font: 600 11px/18px var(--font-text); text-align: center; }
+  html:not(.flat) #status { position: fixed; left: 12px; right: 12px; bottom: calc(74px + env(safe-area-inset-bottom, 0px)); z-index: 45; max-width: 616px; margin: 0 auto; padding: 10px 14px; border-radius: 12px; background: var(--sheet); border: 1.5px solid currentColor; box-shadow: 0 6px 18px rgba(0, 0, 0, 0.22); transition: opacity 0.3s; }
+  html:not(.flat) #status.gone { opacity: 0; pointer-events: none; }
+  .banner { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; padding: 10px 14px; border-radius: 12px; border: 1.5px solid var(--sign); background: var(--tint); font-weight: 500; }
+
+  /* Today: two buttons and the newest day */
+  .scan-buttons { display: grid; grid-template-columns: minmax(0, 1fr) 46px; gap: 8px; align-items: center; }
+  .scan-buttons .btn.main { min-height: 60px; font-size: 20px; }
+  .scan-buttons .wide { grid-column: 1 / -1; }
+  .scan-buttons .icon-btn { height: 60px; }
+  #helpBox { display: flex; flex-direction: column; gap: 10px; }
+  .today { background: var(--sheet); border-radius: 14px; padding: 16px 14px 14px; display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+  .today.fresh { box-shadow: 0 0 0 3px var(--sign); }
+  .heart { color: var(--ink-soft); font-size: 15px; font-variant-numeric: tabular-nums; }
+  .today .label { font: 600 13px var(--font-text); letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-soft); }
+  .today .chips { display: flex; flex-wrap: wrap; gap: 6px; }
+  .today .tl { margin-top: 0; }
+  .today .ask-box { display: flex; flex-direction: column; gap: 6px; padding: 12px; border: 1.5px solid var(--pause); border-radius: 12px; }
+  .today .ask-box .acts { display: flex; flex-wrap: wrap; gap: 8px; }
+  .today .ask-box input[type="text"] { flex: 1 1 9em; min-width: 0; }
+  .job-row .track i.m { background: var(--ink-soft); }
+  html:not(.flat) #status:empty { display: none; }
+  html:not(.flat) #handBox { display: none; }
+  html:not(.flat) #manual { z-index: 60; }
+  #mapView { isolation: isolate; }                       /* the map's own layers stay under the tab bar and the notices */
+  #allSum { font: 600 20px var(--font-head); font-variant-numeric: tabular-nums; }
+  .day-foot:has(> #foldAll[hidden]):not(:has(> :not([hidden]))) { display: none; }
+  #moneyPeriods { grid-template-columns: repeat(2, 1fr); }
+  @media (min-width: 420px) { #moneyPeriods { grid-template-columns: repeat(4, 1fr); } }
+  .today-head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 4px 10px; }
+  .today-head small { color: var(--ink-soft); font-size: 15px; }
+  .tiles { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+  .tiles.three { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .tile { background: var(--paper); border-radius: 12px; padding: 10px 12px; display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+  .tile .k { font: 600 12px var(--font-text); letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-soft); }
+  .tile .v { font: 700 26px var(--font-head); font-variant-numeric: tabular-nums; line-height: 1.1; overflow-wrap: anywhere; }
+  .tile .u { font-size: 13px; color: var(--ink-soft); }
+  div.tl-row { cursor: default; }
+  .acts-row { display: flex; flex-wrap: wrap; gap: 8px; }
+  .acts-row .btn { flex: 1 1 auto; }
+
+  /* Days: the month as a calendar */
+  .cal { background: var(--sheet); border-radius: 14px; padding: 14px 10px; display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+  .cal .pager h2 { text-align: center; font-size: 20px; }
+  .cal-grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 4px; }
+  .cal-grid .wd { text-align: center; font: 600 12px var(--font-text); letter-spacing: 0.04em; text-transform: uppercase; color: var(--ink-soft); padding-bottom: 2px; }
+  .cal-cell { all: unset; box-sizing: border-box; min-height: 54px; border-radius: 10px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px; cursor: pointer; font-variant-numeric: tabular-nums; }
+  .cal-cell .d { font: 500 15px var(--font-text); color: var(--ink-soft); }
+  .cal-cell .h { font: 600 12.5px var(--font-text); min-height: 15px; }
+  .cal-cell.has { background: var(--tint); }
+  .cal-cell.has .d { color: var(--ink); font-weight: 600; }
+  .cal-cell.now { box-shadow: inset 0 0 0 2px var(--ink-soft); }
+  .cal-cell.pick { box-shadow: inset 0 0 0 2.5px var(--sign); }
+  .cm { display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: var(--pause); }
+  .cm.done { width: 16px; height: 4px; border-radius: 2px; background: var(--work); }
+  .cal-cell .cm { min-height: 0; }
+  .cal-cell .cm.none { background: transparent; }
+  #calSum { font: 600 17px var(--font-head); font-variant-numeric: tabular-nums; text-align: center; }
+  .cal-act { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; padding-top: 10px; border-top: 1px solid var(--rule); }
+
+  /* Jobs: renaming */
+  .rename { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; gap: 8px; align-items: end; }
+  .rename .field { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+  .rename label { font: 600 13px var(--font-text); letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-soft); }
+  .rename input[type="text"] { flex: none; width: 100%; }
+  .ujob.sent .ujob-head .name, .ujob.sent .ujob-head .sum { color: var(--ink-soft); }
+
+  /* the live scanner covers the screen */
+  #scanner { position: fixed; inset: 0; z-index: 100; background: #000000; color: #ffffff; display: flex; flex-direction: column; }
+  #scanner .cam { position: relative; flex: 1 1 auto; min-height: 0; overflow: hidden; }
+  #scanner video { display: block; width: 100%; height: 100%; object-fit: cover; background: #000000; }
+  #scanner .frame { position: absolute; left: 50%; top: 50%; width: min(72vw, 46vh); aspect-ratio: 1; transform: translate(-50%, -50%); border: 3px solid #ffffff; border-radius: 20px; box-shadow: 0 0 0 100vmax rgba(0, 0, 0, 0.35); pointer-events: none; }
+  #scanner .bar { position: relative; flex: none; display: flex; flex-direction: column; gap: 10px; padding: 14px 16px calc(14px + env(safe-area-inset-bottom, 0px)); background: #000000; }
+  #scanner p { text-align: center; font-weight: 500; min-height: 2.9em; }
+  #scanner .btn { background: #1c232b; border-color: #46515e; color: #ffffff; }
+  @media (min-width: 520px) { .tiles { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
   @media (prefers-reduced-motion: no-preference) { .day { transition: box-shadow 0.6s ease; } }
 </style>
 
 <div class="page">
-  <header>
-    <h1>WorkTrack Days</h1>
-    <p class="lede">Photograph the code on your watch. The day turns into invoice lines.</p>
+  <header class="top">
+    <h1 id="viewTitle">WorkTrack Days</h1>
+    <button class="icon-btn" id="moreBtn" type="button" aria-label="Settings and backup">
+      <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+    </button>
   </header>
+  <div class="banner" id="updateBar" hidden>
+    <span>A new version of the app is ready.</span>
+    <button class="btn small go" id="updateNow" type="button">Use it now</button>
+  </div>
+  <p id="status" role="status" aria-live="polite"></p>
 
-  <section class="scan" aria-labelledby="scanTitle">
-    <div class="scan-head">
+  <!-- TODAY: add a day, and check the newest one -->
+  <section class="view" id="view-today">
+    <section class="scan" aria-labelledby="scanTitle">
+      <h2 class="sr" id="scanTitle">Add a day</h2>
+      <div class="scan-buttons">
+        <button class="btn main" id="scanLive" type="button">Scan the watch</button>
+        <button class="icon-btn" id="helpBtn" type="button" aria-expanded="false" aria-controls="helpBox" aria-label="How to add a day">
+          <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v6"/><circle cx="12" cy="7.5" r="0.6" fill="currentColor"/></svg>
+        </button>
+        <input class="sr" id="pick" type="file" accept="image/*">
+        <label class="btn wide" for="pick">Choose a photo</label>
+        <input class="sr" id="cam" type="file" accept="image/*" capture="environment">
+      </div>
+      <div id="helpBox" hidden>
+        <div class="scan-head">
       <svg viewBox="0 0 76 76" aria-hidden="true">
         <rect x="27" y="0" width="22" height="76" rx="5" fill="#4a5564"/>
         <circle cx="38" cy="38" r="29" fill="#0d1218" style="stroke: var(--ink-soft)" stroke-width="1.5"/>
@@ -362,46 +469,29 @@
         </g>
         <g fill="#ffffff"><rect x="26.5" y="26.5" width="4" height="4"/><rect x="45.5" y="26.5" width="4" height="4"/><rect x="26.5" y="45.5" width="4" height="4"/></g>
       </svg>
-      <div>
-        <h2 id="scanTitle">Add a day</h2>
-        <ol class="steps">
-          <li>On the watch: Menu, then Finish day. A code appears.</li>
-          <li>Tap the blue button and photograph the watch.</li>
-          <li>The day shows up below.</li>
-        </ol>
+          <ol class="steps">
+            <li>On the watch: Menu, then Finish day. A code appears.</li>
+            <li>Tap <b>Scan the watch</b> and point the phone at the code. It is read by itself.</li>
+            <li>The day shows up here.</li>
+          </ol>
+        </div>
+        <p class="hint">Hold the phone about a hand's width from the watch. If the watch screen goes dark, tap it. If the camera does not start, use <b>Choose a photo</b>, or take a photo from the scan screen.</p>
+        <p class="hint">No code for a day? Open <b>Days</b> and tap the date to add it by hand.</p>
       </div>
-    </div>
-    <div class="scan-buttons">
-      <input class="sr" id="cam" type="file" accept="image/*" capture="environment">
-      <label class="btn main" for="cam">Photograph the watch</label>
-      <input class="sr" id="pick" type="file" accept="image/*">
-      <label class="btn" for="pick">Choose a photo</label>
-    </div>
-    <p id="status" role="status" aria-live="polite"></p>
-    <p class="hint">Hold the phone about a hand's width from the watch, so the watch fills a quarter of the picture or more. If the watch screen goes dark, tap it.</p>
-    <details id="handBox">
-      <summary>No code? Add a day by hand</summary>
-      <form class="hand-row" id="handForm">
-        <div class="field"><label for="handDate">Which day</label><input type="date" id="handDate"></div>
-        <button class="btn small" type="submit">Add this day</button>
-      </form>
-    </details>
+    </section>
+    <div id="todayCard"></div>
   </section>
 
-  <fieldset class="seg">
-    <legend>Round the times to</legend>
-    <div class="seg-row">
-      <label><input class="sr" type="radio" name="round" id="round30" value="30"><span>30 min</span></label>
-      <label><input class="sr" type="radio" name="round" id="round15" value="15"><span>15 min</span></label>
-      <label><input class="sr" type="radio" name="round" id="round1" value="1"><span>1 min</span></label>
-    </div>
-  </fieldset>
-
+  <!-- JOBS: what to invoice -->
+  <section class="view" id="view-jobs">
+    <p class="hint empty" id="jobsEmpty" hidden>No jobs yet. They appear here when you have scanned a day.</p>
   <section class="inv" id="inv" hidden aria-labelledby="invTitle">
-    <h2 class="day-head"><button class="day-toggle" id="invToggle" type="button" aria-expanded="false" aria-controls="invBody"><span class="arrow"></span><span class="date" id="invTitle">Invoice per job</span><span></span><span class="info" id="invInfo"></span></button></h2>
+    <h2 class="day-head tab-head"><button class="day-toggle" id="invToggle" type="button" aria-expanded="false" aria-controls="invBody"><span class="arrow"></span><span class="date" id="invTitle">Invoice per job</span><span></span><span class="info" id="invInfo"></span></button></h2>
     <div class="inv-body" id="invBody" hidden>
     <h3 class="chart-title" id="unsentTitle">Not invoiced yet</h3>
     <div class="ujobs" id="unsent"></div>
+    <h3 class="chart-title" id="sentTitle" hidden>Invoiced</h3>
+    <div class="ujobs" id="sentJobs" hidden></div>
     <h3 class="chart-title" id="invLinesTitle">Lines to copy into Fortnox</h3>
     <div class="inv-pick" id="invPick">
       <label for="invJob">Job</label>
@@ -431,8 +521,80 @@
     </div>
   </section>
 
+  <details id="artBox">
+    <summary>Fortnox articles and prices</summary>
+    <p class="hint" style="margin-top:8px">Used on the invoice lines and in the exported file. Leave a box empty if you don't use it.</p>
+    <div class="art-grid">
+      <span></span><label>Article</label><label>Price, kr</label>
+      <span class="what">Körning, per hour</span><input type="text" id="artDrive" inputmode="numeric" maxlength="12" aria-label="Article for Körning"><input type="text" id="priceDrive" inputmode="decimal" maxlength="10" aria-label="Price per hour for Körning">
+      <span class="what">Framkörning, per km</span><input type="text" id="artKm" inputmode="numeric" maxlength="12" aria-label="Article for Framkörning"><input type="text" id="priceKm" inputmode="decimal" maxlength="10" aria-label="Price per km for Framkörning">
+      <span class="what">Montage, per hour</span><input type="text" id="artWork" inputmode="numeric" maxlength="12" aria-label="Article for Montage"><input type="text" id="priceWork" inputmode="decimal" maxlength="10" aria-label="Price per hour for Montage">
+    </div>
+  </details>
+  </section>
+
+  <!-- DAYS: the calendar, and the days of the month -->
+  <section class="view" id="view-days">
+    <section class="cal" id="cal" aria-labelledby="calTitle">
+      <div class="pager">
+        <button class="btn small" id="calPrev" type="button" aria-label="The month before">&#8249;</button>
+        <h2 id="calTitle"></h2>
+        <button class="btn small" id="calNext" type="button" aria-label="The month after">&#8250;</button>
+      </div>
+      <div class="cal-grid" id="calGrid"></div>
+      <div class="legend"><span><i class="cm todo"></i>Not invoiced yet</span><span><i class="cm done"></i>Invoiced</span></div>
+      <p id="calSum"></p>
+      <div class="cal-act" id="calAct" hidden></div>
+    </section>
+  <details id="handBox">
+      <summary>Add a day by hand</summary>
+      <form class="hand-row" id="handForm">
+        <div class="field"><label for="handDate">Which day</label><input type="date" id="handDate"></div>
+        <button class="btn small" type="submit">Add this day</button>
+      </form>
+  </details>
+
+  <div class="day-foot"><button class="btn small" id="foldAll" type="button" hidden>Open all days</button></div>
+  <section id="days" aria-label="Days"></section>
+  </section>
+
+  <!-- MAP -->
+  <section class="view" id="view-map">
+    <p class="hint empty" id="mapEmpty" hidden>Nothing for the map yet. Drives and places appear here when you have scanned a day.</p>
+  <section class="inv" id="mapBox" hidden aria-labelledby="mapTitle">
+    <h2 class="day-head tab-head"><button class="day-toggle" id="mapToggle" type="button" aria-expanded="false" aria-controls="mapBody"><span class="arrow"></span><span class="date" id="mapTitle">Map</span><span></span><span class="info" id="mapInfo"></span></button></h2>
+    <div class="inv-body" id="mapBody" hidden>
+      <div class="inv-pick">
+        <label for="mapDay">Show</label>
+        <select id="mapDay"></select>
+      </div>
+      <div id="mapView"></div>
+      <div class="legend"><span><i class="sw place"></i>Place with a name</span><span><i class="sw stop"></i>Stop without a name</span><span><i class="sw road"></i>Drive</span><span><i class="sw way"></i>Drive, road not saved</span></div>
+      <h3 class="chart-title" id="mapListTitle" hidden>The day, step by step</h3>
+      <ol class="maplist" id="mapList" hidden></ol>
+      <p class="hint" id="mapPickHint">Choose one day above to see it step by step, with every stretch numbered on the map.</p>
+      <p class="hint">Tap a place, a stop or a drive to see what happened there, to name it or to delete it. The watch notes a point on the way every few kilometres, so the line follows the road roughly, not turn by turn. A dotted line is a drive where only the two ends are known.</p>
+      <p class="hint">The map picture comes from OpenStreetMap over the internet, only while the map is open. Your days and names are not sent. Without internet the picture is grey, and your places still show.</p>
+    </div>
+  </section>
+  </section>
+
+  <!-- STATISTICS: hours, kilometres and money -->
+  <section class="view" id="view-stats">
+    <p class="hint empty" id="statsEmpty" hidden>No numbers yet. They appear here when you have scanned a day.</p>
+    <section class="inv" id="money" hidden aria-labelledby="moneyTitle">
+      <h2 id="moneyTitle">Hours and money</h2>
+      <fieldset class="seg">
+        <legend class="sr">Period</legend>
+        <div class="seg-row" id="moneyPeriods"></div>
+      </fieldset>
+      <div class="tiles" id="moneyTiles"></div>
+      <p class="hint" id="moneyHint" hidden></p>
+      <h3 class="chart-title" id="moneyJobsTitle">Per job</h3>
+      <div class="job-bars" id="moneyJobs"></div>
+    </section>
   <section class="inv" id="charts" hidden aria-labelledby="chartsTitle">
-    <h2 class="day-head"><button class="day-toggle" id="chartsToggle" type="button" aria-expanded="false" aria-controls="chartsBody"><span class="arrow"></span><span class="date" id="chartsTitle">Charts</span><span></span><span class="info" id="chartsInfo"></span></button></h2>
+    <h2 class="day-head tab-head"><button class="day-toggle" id="chartsToggle" type="button" aria-expanded="false" aria-controls="chartsBody"><span class="arrow"></span><span class="date" id="chartsTitle">Charts</span><span></span><span class="info" id="chartsInfo"></span></button></h2>
     <div class="inv-body" id="chartsBody" hidden>
       <div class="chart-top">
         <fieldset class="seg">
@@ -463,56 +625,18 @@
       </details>
     </div>
   </section>
-
-  <section class="inv" id="mapBox" hidden aria-labelledby="mapTitle">
-    <h2 class="day-head"><button class="day-toggle" id="mapToggle" type="button" aria-expanded="false" aria-controls="mapBody"><span class="arrow"></span><span class="date" id="mapTitle">Map</span><span></span><span class="info" id="mapInfo"></span></button></h2>
-    <div class="inv-body" id="mapBody" hidden>
-      <div class="inv-pick">
-        <label for="mapDay">Show</label>
-        <select id="mapDay"></select>
-      </div>
-      <div id="mapView"></div>
-      <div class="legend"><span><i class="sw place"></i>Place with a name</span><span><i class="sw stop"></i>Stop without a name</span><span><i class="sw road"></i>Drive</span><span><i class="sw way"></i>Drive, road not saved</span></div>
-      <h3 class="chart-title" id="mapListTitle" hidden>The day, step by step</h3>
-      <ol class="maplist" id="mapList" hidden></ol>
-      <p class="hint" id="mapPickHint">Choose one day above to see it step by step, with every stretch numbered on the map.</p>
-      <p class="hint">Tap a place, a stop or a drive to see what happened there, to name it or to delete it. The watch notes a point on the way every few kilometres, so the line follows the road roughly, not turn by turn. A dotted line is a drive where only the two ends are known.</p>
-      <p class="hint">The map picture comes from OpenStreetMap over the internet, only while this box is open. Your days and names are not sent. Without internet the picture is grey, and your places still show.</p>
-    </div>
   </section>
 
-  <div class="all" id="all" hidden>
-    <p id="allSum"></p>
-    <div class="day-foot">
-      <button class="btn small" id="exportAll" type="button">Export all days</button>
-      <button class="btn small" id="exportSite" type="button">Export site log</button>
-      <button class="btn small" id="copyAll" type="button">Copy all days</button>
-      <button class="btn small" id="foldAll" type="button">Open all days</button>
+  <!-- SETTINGS -->
+  <section class="view" id="view-more">
+  <fieldset class="seg">
+    <legend>Round the times to</legend>
+    <div class="seg-row">
+      <label><input class="sr" type="radio" name="round" id="round30" value="30"><span>30 min</span></label>
+      <label><input class="sr" type="radio" name="round" id="round15" value="15"><span>15 min</span></label>
+      <label><input class="sr" type="radio" name="round" id="round1" value="1"><span>1 min</span></label>
     </div>
-  </div>
-
-  <section id="days" aria-label="Days"></section>
-
-  <details id="artBox">
-    <summary>Fortnox articles and prices</summary>
-    <p class="hint" style="margin-top:8px">Used on the invoice lines and in the exported file. Leave a box empty if you don't use it.</p>
-    <div class="art-grid">
-      <span></span><label>Article</label><label>Price, kr</label>
-      <span class="what">Körning, per hour</span><input type="text" id="artDrive" inputmode="numeric" maxlength="12" aria-label="Article for Körning"><input type="text" id="priceDrive" inputmode="decimal" maxlength="10" aria-label="Price per hour for Körning">
-      <span class="what">Framkörning, per km</span><input type="text" id="artKm" inputmode="numeric" maxlength="12" aria-label="Article for Framkörning"><input type="text" id="priceKm" inputmode="decimal" maxlength="10" aria-label="Price per km for Framkörning">
-      <span class="what">Montage, per hour</span><input type="text" id="artWork" inputmode="numeric" maxlength="12" aria-label="Article for Montage"><input type="text" id="priceWork" inputmode="decimal" maxlength="10" aria-label="Price per hour for Montage">
-    </div>
-  </details>
-
-  <details id="backupBox">
-    <summary>Backup</summary>
-    <p class="hint" style="margin-top:8px">Everything is only on this phone. A backup file holds your days, your changes to them, place names, added lines, notes and prices. Save one now and then, in Files or by mail to yourself.</p>
-    <div class="backup-row">
-      <button class="btn small" id="backupSave" type="button">Save a backup file</button>
-      <input class="sr" id="backupFile" type="file" accept=".json,application/json">
-      <label class="btn small" for="backupFile">Restore from a backup file</label>
-    </div>
-  </details>
+  </fieldset>
 
   <details id="placesBox" hidden>
     <summary id="placesTitle">Places</summary>
@@ -520,10 +644,56 @@
     <ul class="place-list" id="placeList"></ul>
   </details>
 
+  <section class="inv" id="all" hidden>
+    <h2>Everything you have</h2>
+    <p id="allSum"></p>
+    <div class="day-foot">
+      <button class="btn small" id="exportAll" type="button">Export all days</button>
+      <button class="btn small" id="exportSite" type="button">Export site log</button>
+      <button class="btn small" id="copyAll" type="button">Copy all days</button>
+    </div>
+    <p class="hint">The exported files open in Excel or Numbers.</p>
+  </section>
+
+  <details id="backupBox">
+    <summary>Backup, and moving to another phone</summary>
+    <p class="hint" style="margin-top:8px">Everything is only on this phone. A backup file holds your days, your changes to them, place names, added lines, notes and prices. Save one now and then, in Files or by mail to yourself.</p>
+    <div class="backup-row">
+      <button class="btn small" id="backupSave" type="button">Save a backup file</button>
+      <input class="sr" id="backupFile" type="file" accept=".json,application/json">
+      <label class="btn small" for="backupFile">Restore from a backup file</label>
+    </div>
+    <p class="hint" style="margin-top:8px"><b>Days in another place?</b> The app on the Home Screen, a page in Safari and another phone each keep their own days. To move them: open the old one, save a backup file there, then open this one and restore from that file. Nothing you already have here is changed.</p>
+  </details>
+
+    <section class="inv" id="about">
+      <h2>About this app</h2>
+      <p id="aboutText"></p>
+      <div class="day-foot"><button class="btn small" id="updateCheck" type="button">Look for a new version</button></div>
+    </section>
+
   <footer class="foot">
     <p id="storeNote">Your days and place names are kept on this phone only. Nothing is sent anywhere. Works without internet.</p>
-    <p>The watch keeps its last 31 days, so a day can be photographed again at any time: on the watch's first screen, tap for Saved days.</p>
+    <p>The watch keeps its last 31 days, so a day can be scanned again at any time: on the watch's first screen, tap for Saved days.</p>
   </footer>
+  </section>
+</div>
+
+<nav class="tabs" id="tabs" aria-label="Main">
+  <button class="tab" type="button" data-tab="today"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg><span>Today</span></button>
+  <button class="tab" type="button" data-tab="jobs"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg><span>Jobs</span><b class="badge" id="jobsBadge" hidden></b></button>
+  <button class="tab" type="button" data-tab="days"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10h16M9 3v4M15 3v4"/></svg><span>Days</span></button>
+  <button class="tab" type="button" data-tab="map"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 4 3 6v14l6-2 6 2 6-2V4l-6 2z"/><path d="M9 4v14M15 6v14"/></svg><span>Map</span></button>
+  <button class="tab" type="button" data-tab="stats"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg><span>Statistics</span></button>
+</nav>
+
+<div id="scanner" hidden role="dialog" aria-modal="true" aria-label="Scan the watch">
+  <div class="cam"><video id="scanVideo" playsinline muted autoplay></video><div class="frame" aria-hidden="true"></div></div>
+  <div class="bar">
+    <p id="scanSay">Point the phone at the code on the watch.</p>
+    <label class="btn" for="cam">Take a photo instead</label>
+    <button class="btn" id="scanClose" type="button">Close</button>
+  </div>
 </div>
 
 <datalist id="jobNames"></datalist>
@@ -11325,12 +11495,13 @@ const WorkTrackCode = (() => {
     if (b.length < 10 || u8() !== 0x57) throw new Error("This is a QR code, but not one from WorkTrack.");
     const layout = u8();
     // layout 2 = layout 1 plus the route of each drive and where the day began (watch version 11)
-    if (layout !== 1 && layout !== 2) throw new Error("This code comes from a newer WorkTrack than this page knows.");
+    // layout 3 = layout 2 plus the average heart rate of each stretch and of the pauses (watch version 12)
+    if (layout !== 1 && layout !== 2 && layout !== 3) throw new Error("This code comes from a newer WorkTrack than this page knows.");
     const start = u32();
     const zoneMin = (u8() - 64) * 15;
     const nProjects = u8(), nParts = u8(), flags = u8();
     const hasPlaces = (flags & 1) !== 0, summed = (flags & 2) !== 0;
-    const hasRoutes = layout >= 2 && (flags & 4) !== 0, hasStart = layout >= 2 && (flags & 8) !== 0;
+    const hasRoutes = layout >= 2 && (flags & 4) !== 0, hasStart = layout >= 2 && (flags & 8) !== 0, hasHearts = layout >= 3 && (flags & 16) !== 0;
     const point = (lat, lon) => (lat === 0 && lon === 0 ? null : { lat, lon });
     let startAt = null;                                  // where the day began, when it began with work
     if (hasStart) { const la = place(), lo = place(); startAt = point(la, lo); }
@@ -11346,7 +11517,7 @@ const WorkTrackCode = (() => {
     const parts = [];
     for (let p = 0; p < nParts; p++) {
       const head = u8(), who = head & 0x7f;
-      const part = { kind: head & 0x80 ? "drive" : "work", project: who < projects.length ? projects[who] : "", from: start + u16() * 60, to: 0, metres: 0, a: null, b: null, route: [] };
+      const part = { kind: head & 0x80 ? "drive" : "work", project: who < projects.length ? projects[who] : "", from: start + u16() * 60, to: 0, metres: 0, a: null, b: null, route: [], hr: 0 };
       part.to = start + u16() * 60;
       if (part.kind === "drive") {
         part.metres = u16() * 100;
@@ -11359,8 +11530,10 @@ const WorkTrackCode = (() => {
       }
       parts.push(part);
     }
+    let pauseHr = 0;                                     // beats per minute, 0 = not known
+    if (hasHearts) { pauseHr = u8(); for (const part of parts) part.hr = u8(); }
     if (i !== b.length) throw new Error("The code has extra data at the end.");
-    return { start, zoneMin, hasPlaces, summed, hasRoutes, startAt, projects, parts };
+    return { start, zoneMin, hasPlaces, summed, hasRoutes, hasHearts, pauseHr, startAt, projects, parts };
   }
 
   // bytes <-> text, for keeping scanned days in the browser
@@ -11428,12 +11601,12 @@ const WorkTrackInvoice = (() => {
       if (g.kind === "drive") {
         const dist = Math.round(g.parts.reduce((s, p) => s + p.metres, 0) / 1000);
         km += dist;
-        rows.push({ kind: "drive", project: g.project, partIndex: g.index, qty: h, unit: "h", exactMin: Math.round(exact / 60), from: first.a, to: last.b,
+        rows.push({ kind: "drive", project: g.project, partIndex: g.index, at: first.from, qty: h, unit: "h", exactMin: Math.round(exact / 60), from: first.a, to: last.b,
           fromName: name(first.a, first.an), toName: name(last.b, last.bn), suggestTo: g.project,
           text: `${ddmm(first.from)} ${hhmm(from)}-${hhmm(to)} ${o.driveWord} ${name(first.a, first.an)}-${name(last.b, last.bn)} ${plain(h)}h ${dist}km` });
-        rows.push({ kind: "km", project: g.project, partIndex: g.index, qty: dist, unit: "km", text: `${o.kmWord} ${dist}` });
+        rows.push({ kind: "km", project: g.project, partIndex: g.index, at: first.from, qty: dist, unit: "km", text: `${o.kmWord} ${dist}` });
       } else {
-        rows.push({ kind: "work", project: g.project, partIndex: g.index, qty: h, unit: "h", exactMin: Math.round(exact / 60),
+        rows.push({ kind: "work", project: g.project, partIndex: g.index, at: first.from, qty: h, unit: "h", exactMin: Math.round(exact / 60),
           text: `${ddmm(first.from)} ${o.workWord} ${plain(gross)}h ${hhmm(from)}-${hhmm(to)}` });
       }
     }
@@ -11473,7 +11646,8 @@ const WorkTrackTimeline = (() => {
   const copy = (p) => ({ kind: p.kind === "drive" ? "drive" : "work", project: String(p.project || ""), from: Math.round(p.from), to: Math.round(p.to),
     metres: p.kind === "drive" ? hecto(+p.metres || 0) : 0, a: p.kind === "drive" ? point(p.a) : null, b: p.kind === "drive" ? point(p.b) : null,
     an: p.kind === "drive" ? String(p.an || "").slice(0, 40) : "", bn: p.kind === "drive" ? String(p.bn || "").slice(0, 40) : "",
-    route: p.kind === "drive" && Array.isArray(p.route) ? p.route.map(point).filter(Boolean) : [] });      // the points the watch noted on the way
+    route: p.kind === "drive" && Array.isArray(p.route) ? p.route.map(point).filter(Boolean) : [],        // the points the watch noted on the way
+    hr: p.hr > 0 && p.hr <= 255 ? Math.round(p.hr) : 0 });                                               // its average heart rate, 0 = not known
 
   // Take the time from..to out of the day. A stretch that sticks out on both
   // sides is split in two; a drive's kilometres are shared out by time.
@@ -11619,7 +11793,8 @@ if (typeof module === "object" && module.exports) module.exports = WorkTrackScan
     invoiced: {},                                          // "day start|job" -> date it was invoiced
     extras: [],                                            // lines added by hand: { id, job, date, text, qty, unit, price }
     notes: {},                                             // day start -> what you wrote about that day
-    edits: {} };                                           // day start -> the day's stretches after you changed them by hand
+    edits: {},                                             // day start -> the day's stretches after you changed them by hand
+    renames: {} };                                         // the job's name on the watch -> the name you gave it here
   let kept = true;                                         // false if the browser will not keep anything
   function load() {
     try {
@@ -11636,9 +11811,15 @@ if (typeof module === "object" && module.exports) module.exports = WorkTrackScan
         takeExtras(o.extras);
         if (o.notes && typeof o.notes === "object") for (const [k, v] of Object.entries(o.notes)) if (typeof v === "string" && v) store.notes[k] = v.slice(0, 500);
         if (o.edits && typeof o.edits === "object") for (const [k, v] of Object.entries(o.edits)) { const c = T.clean(v); if (c && k in store.days) store.edits[k] = c; }
+        takeRenames(o.renames);
       }
     } catch (e) { kept = false; }
   }
+  function takeRenames(o) {
+    if (!o || typeof o !== "object") return;
+    for (const [k, v] of Object.entries(o)) if (k && typeof v === "string" && v && v !== k && !(k in store.renames)) store.renames[k] = v.slice(0, 40);
+  }
+  const real = (name) => (name && Object.prototype.hasOwnProperty.call(store.renames, name) ? store.renames[name] : name);
   // Added lines from storage or a backup: only well-formed ones, each once.
   function takeExtras(list) {
     let n = 0;
@@ -11665,6 +11846,9 @@ if (typeof module === "object" && module.exports) module.exports = WorkTrackScan
         const d = C.unpackDay(C.fromBase64(text));
         d.key = key; d.scanned = d.parts;                   // what the watch said, kept for "Undo all changes"
         if (store.edits[key] && !d.summed) { d.parts = store.edits[key].map(T.copy); d.edited = true; }
+        d.projects = d.projects.map(real);                  // a job you renamed has its new name everywhere
+        for (const p of d.scanned) p.project = real(p.project);
+        if (d.parts !== d.scanned) for (const p of d.parts) p.project = real(p.project);
         list.push(d);
       } catch (e) { /* a broken entry is skipped */ }
     }
@@ -11688,6 +11872,20 @@ if (typeof module === "object" && module.exports) module.exports = WorkTrackScan
   const shortDay = (day) => { const d = local(day, day.start); return `${WEEK[d.getUTCDay()]} ${d.getUTCDate()} ${MONTH[d.getUTCMonth()]}`; };
   const ddmmOf = (day) => { const d = local(day, day.start); return pad(d.getUTCDate()) + "/" + pad(d.getUTCMonth() + 1); };
   const clock = (day, t) => { const d = local(day, t); return pad(d.getUTCHours()) + ":" + pad(d.getUTCMinutes()); };
+  const niceIso = (iso) => { const d = new Date(iso + "T00:00:00Z"); return `${WEEK[d.getUTCDay()]} ${d.getUTCDate()} ${MONTH[d.getUTCMonth()]}`; };
+  // Heart rate (watch version 12): each stretch has its average, the pauses have one for the day.
+  const bpm = (n) => (n > 0 ? ` · ${n} bpm` : "");
+  // The average over stretches of one kind, each counting for as long as it lasted. 0 = not known.
+  function heartOver(parts, kind) {
+    let beats = 0, secs = 0;
+    for (const p of parts) if (p.kind === kind && p.hr > 0 && p.to > p.from) { beats += p.hr * (p.to - p.from); secs += p.to - p.from; }
+    return secs ? Math.round(beats / secs) : 0;
+  }
+  // "Heart rate: work 104, drive 76, pause 64 bpm", or "" when the watch sent none.
+  function heartLine(day) {
+    const bits = [["work", heartOver(day.parts, "work")], ["drive", heartOver(day.parts, "drive")], ["pause", day.pauseHr || 0]].filter((x) => x[1] > 0).map((x) => `${x[0]} ${x[1]}`);
+    return bits.length ? `Heart rate: ${bits.join(", ")} bpm` : "";
+  }
   const measured = (min) => (min >= 60 ? `${Math.floor(min / 60)} h ${min % 60} min` : `${min} min`);
   const hoursText = (h) => I.comma(h, 2);
   const linesOf = (day) => I.buildLines(day, { roundMin: store.roundMin, places: day.example ? EXAMPLE_PLACES : store.places });
@@ -11701,6 +11899,40 @@ if (typeof module === "object" && module.exports) module.exports = WorkTrackScan
   function flash(button, text) {
     const was = button.textContent; button.textContent = text;
     setTimeout(() => { button.textContent = was; }, 1400);
+  }
+
+  // ---- one screen at a time ----------------------------------------------------
+  const ALL = location.hash === "#all";       // every screen on one page, as before: the tests use it
+  if (ALL) document.documentElement.classList.add("flat");
+  const TABS = { today: "Today", jobs: "Jobs", days: "Days", map: "Map", stats: "Statistics", more: "Settings" };
+  let tab = "today", tabBefore = "today";
+  function setTab(name) {
+    if (name !== "more") tabBefore = name;
+    tab = name;
+    if (ALL) return;
+    invShown = true; chartShown = name === "stats";
+    if (name === "map" && !mapShown) mapFit = true;
+    mapShown = name === "map";
+  }
+  function showTab() {
+    for (const v of document.querySelectorAll(".view")) v.classList.toggle("on", v.id === "view-" + tab);
+    for (const b of document.querySelectorAll(".tab")) { if (b.dataset.tab === tab) b.setAttribute("aria-current", "page"); else b.removeAttribute("aria-current"); }
+    $("viewTitle").textContent = ALL ? "WorkTrack Days" : TABS[tab];
+    $("moreBtn").setAttribute("aria-pressed", tab === "more" ? "true" : "false");
+    $("moreBtn").setAttribute("aria-label", tab === "more" ? "Close the settings" : "Settings and backup");
+  }
+  function go(name) { marking = false; renaming = null; setTab(name); render(); window.scrollTo(0, 0); }
+  for (const b of document.querySelectorAll(".tab")) b.addEventListener("click", () => go(b.dataset.tab));
+  $("moreBtn").addEventListener("click", () => go(tab === "more" ? tabBefore : "more"));
+  $("helpBtn").addEventListener("click", () => { const box = $("helpBox"); box.hidden = !box.hidden; $("helpBtn").setAttribute("aria-expanded", box.hidden ? "false" : "true"); });
+  // Open one day on the Days screen (and its "Fix the times" box, if asked).
+  function openDay(key, fix) {
+    const day = days().find((d) => d.key === key);
+    if (!day) return;
+    openDays.add(key); if (fix) fixOpen.add(key);
+    calMonth = isoDate(day).slice(0, 7); calPick = dayNo(isoDate(day)); removing = null;
+    setTab("days"); render();
+    goTo((fix && $("fix-" + key)) || $("day-" + key));
   }
 
   // ---- drawing the page ---------------------------------------------------
@@ -11751,6 +11983,8 @@ if (typeof module === "object" && module.exports) module.exports = WorkTrackScan
     box = el("div", "day-body"); box.id = "body-" + day.key; box.hidden = !open;
     outer.appendChild(box);
     if (day.example) box.appendChild(el("p", "hint", "This is what a day looks like. It goes away when you add your first day."));
+    { const last = day.parts.length ? isoAt(day, day.parts[day.parts.length - 1].to - 1) : isoDate(day);
+      if (!day.summed && last > isoDate(day)) box.appendChild(el("p", "note", `This day runs past midnight, to ${niceIso(last)}. Each line counts on the date it began. If the watch was left running by mistake, shorten it under Fix the times.`)); }
     if (day.summed) box.appendChild(el("p", "note", "This day had a great many stretches, so the watch added them up per job. Hours and kilometres are exact; the times of day are not."));
     else if (!day.hasPlaces && !day.edited && day.parts.some((p) => p.kind === "drive")) box.appendChild(el("p", "note", "This day was too long for the code to hold where each drive began and ended. Add the place names to the lines by hand."));
 
@@ -11781,6 +12015,7 @@ if (typeof module === "object" && module.exports) module.exports = WorkTrackScan
     }
     box.appendChild(list);
     if (out.rows.length === 0) box.appendChild(el("p", "hint", "Nothing is counted on this day."));
+    if (!day.example && heartLine(day)) box.appendChild(el("p", "heart", heartLine(day)));
 
     unnamed(day).forEach((spot, i) => {
       const id = `place-${day.key}-${i}`, ask = el("form", "ask");
@@ -11859,6 +12094,121 @@ if (typeof module === "object" && module.exports) module.exports = WorkTrackScan
     return outer;
   }
 
+  // ---- Today: the day just scanned (or the newest one), to check at a glance --------
+  let todayKey = null;           // the day scanned last in this sitting
+  function todayCard(list) {
+    const box = $("todayCard");
+    box.textContent = "";
+    if (ALL) return;                                       // on the one long page the day itself is right below
+    if (!list.length) { box.appendChild(el("p", "hint empty", "Your newest day shows up here after the first scan.")); return; }
+    const day = list.find((d) => d.key === todayKey) || list[list.length - 1], out = linesOf(day);
+    const card = el("article", "today" + (fresh === day.key ? " fresh" : "")); card.id = "today-" + day.key;
+    const head = el("div", "today-head"), jobs = [...new Set(out.rows.map((r) => r.project || "No project"))];
+    head.append(el("h2", "", dateTitle(day)), el("small", "", jobs.join(", ")));
+    card.append(el("span", "label", day === list[list.length - 1] ? "Newest day" : "Scanned just now"), head);
+    const sum = (kind) => out.rows.filter((r) => r.kind === kind).reduce((s, r) => s + r.qty, 0);
+    const tiles = el("div", "tiles three");
+    for (const [k, v, u] of [["Work", hoursText(sum("work")), "hours"], ["Drive", hoursText(sum("drive")), "hours"], ["Driven", String(out.km), "km"]]) {
+      const tile = el("div", "tile"); tile.append(el("span", "k", k), el("span", "v", v), el("span", "u", u)); tiles.appendChild(tile);
+    }
+    card.appendChild(tiles);
+    if (heartLine(day)) card.appendChild(el("p", "heart", heartLine(day)));
+    const chips = el("div", "chips"), keys = [...new Set(out.rows.map((r) => day.key + "|" + (r.project || "")))], billed = keys.filter((k) => store.invoiced[k]).length;
+    if (keys.length && billed === keys.length) chips.appendChild(el("span", "chip done", "Invoiced"));
+    if (day.edited) chips.appendChild(el("span", "chip", "Changed by you"));
+    if (store.notes[day.key]) chips.appendChild(el("span", "chip", "Note"));
+    if (chips.children.length) card.appendChild(chips);
+
+    if (day.summed) card.appendChild(el("p", "note", "This day had a great many stretches, so the watch added them up per job."));
+    else {
+      const rows = T.rows(day.parts);
+      if (!rows.length) card.appendChild(el("p", "hint", "Nothing is counted on this day yet."));
+      else {
+        const ol = el("ol", "tl");
+        const place = (point, typed) => typed || (I.findPlace(store.places, point) || {}).name || "?";
+        for (const r of rows) {
+          const li = el("li"), b = el("button", "tl-row " + r.kind); b.type = "button";
+          const word = el("span", "word"); word.append(el("i"), KIND[r.kind]);
+          const what = r.kind === "pause" ? measured(Math.round((r.to - r.from) / 60))
+            : (r.kind === "drive" ? `${place(r.part.a, r.part.an)} → ${place(r.part.b, r.part.bn)} · ${kmText(r.part.metres)} km` : jobName(r.part.project)) + bpm(r.part.hr);
+          b.append(el("span", "when", `${clock(day, r.from)}–${clock(day, r.to)}`), word, el("span", "what", what));
+          b.addEventListener("click", () => {             // straight to the form that changes this row
+            fixing = r.kind === "pause" ? { key: day.key, what: "pause", before: r.before } : { key: day.key, what: "part", index: r.index };
+            undoing = null; openDay(day.key, true);
+            const form = $(`fix-${day.key}-form`); if (form && form.scrollIntoView) form.scrollIntoView({ block: "center" });
+          });
+          li.appendChild(b); ol.appendChild(li);
+        }
+        card.append(ol, el("p", "hint", "Something wrong? Tap the row to change it."));
+      }
+    }
+    const spots = unnamed(day);
+    for (const spot of spots.slice(0, 3)) {                // places to name, one question each
+      const ask = el("div", "ask-box");
+      ask.append(el("b", "", spot.arrived ? `Where did you arrive at ${clock(day, spot.when)}?` : `Where did you set off from at ${clock(day, spot.when)}?`), nameForm(spot.point, spot.suggest));
+      card.appendChild(ask);
+    }
+    if (spots.length > 3) card.appendChild(el("p", "hint", `${spots.length - 3} more places have no name. Open the day to name them.`));
+    const acts = el("div", "acts-row"), fix = el("button", "btn small", "Fix the times"), open = el("button", "btn small", "Open the day");
+    fix.type = open.type = "button";
+    fix.addEventListener("click", () => openDay(day.key, true));
+    open.addEventListener("click", () => openDay(day.key));
+    if (!day.summed) acts.appendChild(fix);
+    if (hasMap && hasWhere(day)) { const onMap = el("button", "btn small", "On the map"); onMap.type = "button"; onMap.addEventListener("click", () => showOnMap(day.key)); acts.appendChild(onMap); }
+    acts.appendChild(open);
+    card.appendChild(acts);
+    box.appendChild(card);
+  }
+
+  // ---- Days: the month as a calendar ------------------------------------------------
+  const MONTH_LONG = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+  let calMonth = null, calPick = null;       // "2026-11"; the date tapped, as a day number
+  const todayIso = () => { const n = new Date(); return n.getFullYear() + "-" + pad(n.getMonth() + 1) + "-" + pad(n.getDate()); };
+  // Draws the month and returns the days that have something in it.
+  function renderCal(list) {
+    const by = tally(list), now = todayIso();
+    if (!calMonth) calMonth = (list.length ? isoDate(list[list.length - 1]) : now).slice(0, 7);
+    const [y, m] = calMonth.split("-").map(Number), first = dayNo(calMonth + "-01"), count = new Date(Date.UTC(y, m, 0)).getUTCDate();
+    $("calTitle").textContent = `${MONTH_LONG[m - 1]} ${y}`;
+    const newest = [now.slice(0, 7), ...list.map((d) => isoDate(d).slice(0, 7))].sort().pop();
+    $("calPrev").disabled = calMonth <= "2020-01"; $("calNext").disabled = calMonth >= newest;
+    // which dates still have lines to invoice
+    const state = new Map();
+    for (const r of allRows(list)) { if (!(r.row.qty > 0)) continue; const n = dayNo(r.date), s = state.get(n) || { open: 0, done: 0 }; if (store.invoiced[r.key]) s.done++; else s.open++; state.set(n, s); }
+    const grid = $("calGrid"), inMonth = new Set(), all = blank();
+    grid.textContent = "";
+    for (const w of ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]) grid.appendChild(el("span", "wd", w));
+    for (let i = (dateOf(first).getUTCDay() + 6) % 7; i > 0; i--) grid.appendChild(el("span"));
+    for (let n = first; n < first + count; n++) {
+      const s = by.get(n), st = state.get(n), hours = s ? s.work + s.drive : 0, iso = dateOf(n).toISOString().slice(0, 10);
+      if (s) { pour(all, s); for (const k of s.keys) inMonth.add(k); }
+      const b = el("button", "cal-cell" + (s ? " has" : "") + (iso === now ? " now" : "") + (calPick === n ? " pick" : "")); b.type = "button"; b.dataset.date = iso;
+      b.append(el("span", "d", String(dateOf(n).getUTCDate())), el("span", "h", s ? String(Math.round(hours * 100) / 100).replace(".", ",") : ""), el("i", "cm " + (st ? (st.open ? "todo" : "done") : "none")));
+      b.setAttribute("aria-label", `${niceIso(iso)}: ` + (s ? `${hText(hours)}, ${s.km} km` + (st ? (st.open ? ", not invoiced yet" : ", invoiced") : "") : "nothing"));
+      if (calPick === n) b.setAttribute("aria-pressed", "true");
+      b.addEventListener("click", () => {
+        calPick = n;
+        if (s) for (const k of s.keys) openDays.add(k);
+        render();
+        if (s) goTo($("day-" + s.keys[s.keys.length - 1])); else goTo($("calAct"));
+      });
+      grid.appendChild(b);
+    }
+    const n = inMonth.size;
+    $("calSum").textContent = n ? `${n} ${n === 1 ? "day" : "days"} · ${hText(all.work + all.drive)} · ${all.km} km` : "Nothing in this month.";
+    const act = $("calAct"), picked = calPick !== null && calPick >= first && calPick < first + count && !by.has(calPick);
+    act.textContent = ""; act.hidden = !picked;
+    if (picked) {
+      const iso = dateOf(calPick).toISOString().slice(0, 10);
+      act.appendChild(el("span", "", `${niceIso(iso)}: ` + (iso > now ? "this day has not come yet." : "nothing here.")));
+      if (iso <= now) { const add = el("button", "btn small go", "Add this day by hand"); add.type = "button"; add.addEventListener("click", () => addByHand(iso)); act.appendChild(add); }
+    }
+    return inMonth;
+  }
+  const stepMonth = (by) => { const [y, m] = calMonth.split("-").map(Number), d = new Date(Date.UTC(y, m - 1 + by, 1)); calMonth = d.toISOString().slice(0, 7); calPick = null; render(); };
+  $("calPrev").addEventListener("click", () => stepMonth(-1));
+  $("calNext").addEventListener("click", () => stepMonth(1));
+
   // ---- fixing a day by hand --------------------------------------------------
   const KIND = { work: "Work", drive: "Drive", pause: "Pause" };
   const fixOpen = new Set();     // the days whose "Fix the times" box is open
@@ -11897,7 +12247,7 @@ if (typeof module === "object" && module.exports) module.exports = WorkTrackScan
         const li = el("li", on ? "on" : ""), b = el("button", "tl-row " + r.kind);
         b.type = "button"; b.setAttribute("aria-expanded", on ? "true" : "false");
         const word = el("span", "word"); word.append(el("i"), KIND[r.kind]);
-        const what = r.kind === "pause" ? measured(Math.round((r.to - r.from) / 60)) : jobName(r.part.project) + (r.kind === "drive" ? ` · ${kmText(r.part.metres)} km` : "");
+        const what = r.kind === "pause" ? measured(Math.round((r.to - r.from) / 60)) : jobName(r.part.project) + (r.kind === "drive" ? ` · ${kmText(r.part.metres)} km` : "") + bpm(r.part.hr);
         b.append(el("span", "when", `${clock(day, r.from)}–${clock(day, r.to)}`), word, el("span", "what", what));
         b.addEventListener("click", () => {
           fixing = on ? null : r.kind === "pause" ? { key: day.key, what: "pause", before: r.before } : { key: day.key, what: "part", index: r.index };
@@ -12006,7 +12356,7 @@ if (typeof module === "object" && module.exports) module.exports = WorkTrackScan
         setParts(day, T.cut(parts, from, to), `Pause ${span} saved.`);
         return;
       }
-      const next = { kind, project: jobIn.value.trim().slice(0, 60), from, to, metres: 0, a: null, b: null, an: "", bn: "" };
+      const next = { kind, project: jobIn.value.trim().slice(0, 60), from, to, metres: 0, a: null, b: null, an: "", bn: "", hr: part && part.kind === kind ? part.hr || 0 : 0 };
       if (kind === "drive") {
         const km = kmIn.value.trim() ? num(kmIn.value) : 0;
         if (km === null || km < 0 || km > 3000) { say("error", "Type the kilometres as a number, like 102 or 23,5."); return; }
@@ -12029,9 +12379,9 @@ if (typeof module === "object" && module.exports) module.exports = WorkTrackScan
   }
 
   // ---- a whole day the watch never saw -----------------------------------------
-  $("handForm").addEventListener("submit", (e) => {
-    e.preventDefault();
-    const m = /^(\d{4})-(\d\d)-(\d\d)$/.exec($("handDate").value);
+  $("handForm").addEventListener("submit", (e) => { e.preventDefault(); addByHand($("handDate").value); });
+  function addByHand(iso) {
+    const m = /^(\d{4})-(\d\d)-(\d\d)$/.exec(iso);
     if (!m || +m[1] < 2020 || +m[1] > 2099) { say("error", "Choose the date first."); return; }
     const same = days().find((d) => isoDate(d) === m[0]);
     let key;
@@ -12044,13 +12394,14 @@ if (typeof module === "object" && module.exports) module.exports = WorkTrackScan
     }
     openDays.add(key); fixOpen.add(key); fixing = { key, what: "new" }; removing = null; fresh = key;
     $("handBox").open = false; $("handDate").value = "";
+    calMonth = m[0].slice(0, 7); calPick = dayNo(m[0]); setTab("days");
     save(); render();
     const day = days().find((d) => d.key === key);
     say("ok", same ? `You have ${dateTitle(day)} already. Add the missed rows to it.` : `Added ${dateTitle(day)}. Now add its rows.`);
     const block = $("fix-" + key) || $("day-" + key);
     if (block && block.scrollIntoView) block.scrollIntoView({ block: "center" });
     setTimeout(() => { if (fresh === key) { fresh = null; const b = $("day-" + key); if (b) b.classList.remove("fresh"); } }, 4000);
-  });
+  }
 
   // ---- charts -------------------------------------------------------------------
   let chartShown = false, chartMode = "days", chartPage = 0, chartPick = null, chartJob = null, lastList = [];
@@ -12071,11 +12422,10 @@ if (typeof module === "object" && module.exports) module.exports = WorkTrackScan
   function tally(list) {
     const by = new Map();
     for (const day of list) {
-      const n = dayNo(isoDate(day));
-      if (!by.has(n)) by.set(n, blank());
-      const s = by.get(n);
-      s.keys.push(day.key);
+      const slot = (n) => { if (!by.has(n)) by.set(n, blank()); const s = by.get(n); if (!s.keys.includes(day.key)) s.keys.push(day.key); return s; };
+      slot(dayNo(isoDate(day)));
       for (const r of linesOf(day).rows) {
+        const s = slot(dayNo(rowDate(day, r)));             // a line counts on the date it began
         if (!(r.qty > 0)) continue;
         const what = r.kind === "km" ? "km" : r.kind;
         s[what] += r.qty; jobSlot(s, r.project || "")[what] += r.qty;
@@ -12118,6 +12468,7 @@ if (typeof module === "object" && module.exports) module.exports = WorkTrackScan
     lastList = list;
     $("charts").hidden = list.length === 0;
     if (!list.length) return;
+    if (!ALL) $("chartsBody").hidden = !chartShown;
     const by = tally(list);
     { // the folded row tells the week of the newest day
       const latest = Math.max(...by.keys()), mon = mondayOf(latest), week = blank();
@@ -12200,7 +12551,7 @@ if (typeof module === "object" && module.exports) module.exports = WorkTrackScan
       const r = rows.find((x) => x.name === chartJob);
       jr.append(el("p", "who", `${jobName(r.name)}: ${hText(r.total)}`), numsLine(r));
       const go = el("button", "btn small", "Invoice this job"); go.type = "button";
-      go.addEventListener("click", () => { invJob = r.name; invShown = true; marking = false; render(); goTo($("inv")); });
+      go.addEventListener("click", () => { invJob = r.name; unsentOpen.add(r.name); marking = false; setTab("jobs"); invShown = true; render(); goTo($("inv")); });
       jr.appendChild(go);
     }
 
@@ -12230,7 +12581,7 @@ if (typeof module === "object" && module.exports) module.exports = WorkTrackScan
     if (i !== chartPick) return;                       // only pointed at with a mouse: no button
     const go = el("button", "btn small", chartMode === "days" ? (b.keys.length > 1 ? "Open these days" : "Open this day") : "Show this week day by day"); go.type = "button";
     go.addEventListener("click", () => {
-      if (chartMode === "days") { for (const k of b.keys) openDays.add(k); render(); goTo($("day-" + b.keys[b.keys.length - 1])); return; }
+      if (chartMode === "days") { for (const k of b.keys) openDays.add(k); calMonth = dateOf(b.n).toISOString().slice(0, 7); calPick = b.n; setTab("days"); render(); goTo($("day-" + b.keys[b.keys.length - 1])); return; }
       chartMode = "days"; chartPage = Math.max(0, Math.ceil((mondayOf(B.latest) - 7 - b.n) / 14)); chartPick = null;
       renderCharts(lastList);
     });
@@ -12244,7 +12595,7 @@ if (typeof module === "object" && module.exports) module.exports = WorkTrackScan
 
   // ---- the map ------------------------------------------------------------------------
   const hasMap = typeof L !== "undefined" && typeof L.map === "function";
-  let mapShown = false, mapDay = "all", map = null, mapLayer = null, mapFit = true;
+  let mapShown = false, mapDay = "all", map = null, mapLayer = null, mapFit = true, mapChosen = false;
   // Where a work stretch took place. The watch saves positions for drives, so: where the drive
   // before it ended; else where the day began; else where the next drive set off; else the place
   // that has the job's name.
@@ -12266,9 +12617,9 @@ if (typeof module === "object" && module.exports) module.exports = WorkTrackScan
   let mapFocus = null;           // { key, index }: the stretch to show once the map is drawn
   let mapItems = new Map();      // "day key:index" -> how to show that stretch on the map
   function showOnMap(key, index) {
-    mapShown = true; mapDay = key; mapFit = true;
+    setTab("map"); mapShown = true; mapDay = key; mapFit = true; mapChosen = true;
     mapFocus = index === undefined ? null : { key, index };
-    render(); goTo($("mapBox"));
+    render(); if (ALL) goTo($("mapBox")); else window.scrollTo(0, 0);
   }
   // Bring one stretch into view on the map and open what is known about it.
   function focusEntry(key, index) {
@@ -12306,6 +12657,7 @@ if (typeof module === "object" && module.exports) module.exports = WorkTrackScan
     const withPoints = list.filter(hasWhere);
     const box = $("mapBox");
     box.hidden = !hasMap || (withPoints.length === 0 && store.places.length === 0);
+    $("mapEmpty").hidden = !box.hidden;
     if (box.hidden) return;
     const nDrives = withPoints.reduce((n, d) => n + d.parts.filter((p) => p.kind === "drive" && lineOf(p).length > 1).length, 0);
     const info = $("mapInfo"); info.textContent = "";
@@ -12313,6 +12665,8 @@ if (typeof module === "object" && module.exports) module.exports = WorkTrackScan
     $("mapToggle").setAttribute("aria-expanded", mapShown ? "true" : "false");
     $("mapBody").hidden = !mapShown;
     if (!mapShown) return;
+    if (!ALL && !mapChosen && withPoints.length) { mapDay = withPoints[withPoints.length - 1].key; mapFit = true; }     // the newest day, step by step
+    mapChosen = true;
     if (mapDay !== "all" && !withPoints.some((d) => d.key === mapDay)) { mapDay = "all"; mapFit = true; mapFocus = null; }
     const sel = $("mapDay");
     sel.textContent = "";
@@ -12370,7 +12724,7 @@ if (typeof module === "object" && module.exports) module.exports = WorkTrackScan
               el("span", "", ends),
               el("small", "", jobName(p.project) + (p.route && p.route.length ? "" : " · only the two ends are known")),
               (() => { const acts = el("div", "acts"), open = el("button", "btn small", "Open this day"); open.type = "button";
-                open.addEventListener("click", () => { openDays.add(day.key); render(); goTo($("day-" + day.key)); });
+                open.addEventListener("click", () => openDay(day.key));
                 acts.append(open, twice("Delete this drive", "Yes, delete it", () => setParts(day, T.remove(day.parts, index), `Deleted the drive ${span}. To get it back: open the day, Fix the times, Undo all changes.`)));
                 return acts; })()), POP);
             if (oneDay) L.marker(mid, { icon: L.divIcon({ className: "num-icon", html: `<span class="num">${num}</span>`, iconSize: [24, 20], iconAnchor: [12, 10] }), interactive: false, keyboard: false }).addTo(mapLayer);
@@ -12469,8 +12823,10 @@ if (typeof module === "object" && module.exports) module.exports = WorkTrackScan
   const jobName = (j) => j || "No project";
   const num = (text) => { const v = parseFloat(String(text).replace(/\s/g, "").replace(",", ".")); return isFinite(v) ? v : null; };
   const money = (v) => v.toFixed(2).replace(".", ",").replace(/\B(?=(\d{3})+(?!\d))/g, " ");
-  const isoDate = (day) => { const d = local(day, day.start); return d.getUTCFullYear() + "-" + pad(d.getUTCMonth() + 1) + "-" + pad(d.getUTCDate()); };
-  let invJob = null, marking = false, invShown = false;
+  const isoAt = (day, t) => { const d = local(day, t); return d.getUTCFullYear() + "-" + pad(d.getUTCMonth() + 1) + "-" + pad(d.getUTCDate()); };
+  const isoDate = (day) => isoAt(day, day.start);
+  const rowDate = (day, row) => isoAt(day, row.at === undefined ? day.start : row.at);    // a day that runs past midnight has lines on two dates
+  let invJob = null, marking = false, invShown = false, renaming = null;
   const unsentOpen = new Set();   // the jobs folded open in "Not invoiced yet"
 
   // Every invoice row of every day, with its job, article and price.
@@ -12480,7 +12836,7 @@ if (typeof module === "object" && module.exports) module.exports = WorkTrackScan
       for (const row of linesOf(day).rows) {
         const a = store.articles[ARTKEY[row.kind]] || { art: "", price: "" };
         const price = num(a.price);
-        out.push({ day, date: isoDate(day), when: day.start, job: row.project || "", row, key: day.key + "|" + (row.project || ""), art: a.art, price, amount: price === null ? null : Math.round(row.qty * price * 100) / 100 });
+        out.push({ day, date: rowDate(day, row), when: day.start, job: row.project || "", row, key: day.key + "|" + (row.project || ""), art: a.art, price, amount: price === null ? null : Math.round(row.qty * price * 100) / 100 });
       }
     }
     for (const x of store.extras) {
@@ -12492,6 +12848,8 @@ if (typeof module === "object" && module.exports) module.exports = WorkTrackScan
   function renderInvoice(list) {
     const rows = allRows(list), jobs = [...new Set(rows.map((r) => r.job))];
     $("inv").hidden = jobs.length === 0;
+    $("jobsEmpty").hidden = jobs.length > 0;
+    $("jobsBadge").hidden = true;
     if (!jobs.length) return;
     // jobs with lines still to invoice first, the job seen most recently first
     const open = (j) => rows.some((r) => r.job === j && !store.invoiced[r.key]);
@@ -12499,6 +12857,23 @@ if (typeof module === "object" && module.exports) module.exports = WorkTrackScan
     jobs.sort((a, b) => (open(b) - open(a)) || (lastSeen(b) - lastSeen(a)));
     if (invJob === null || !jobs.includes(invJob)) invJob = jobs[0];
     const waiting = jobs.filter(open);
+    $("jobsBadge").hidden = waiting.length === 0; $("jobsBadge").textContent = String(waiting.length);
+    $("jobsBadge").setAttribute("aria-label", `${waiting.length} to invoice`);
+    const nice = niceIso;
+    // The small form that gives a job another name, on every day and line.
+    const renameForm = (j) => {
+      const form = el("form", "rename"), field = el("div", "field"), input = el("input"), id = "rename-" + jobs.indexOf(j);
+      const lab = el("label", "", "Name or number of this job"); lab.htmlFor = id;
+      input.type = "text"; input.id = id; input.maxLength = 40; input.value = j; input.autocomplete = "off";
+      field.append(lab, input);
+      const ok = el("button", "btn small go", "Save"), no = el("button", "btn small", "Cancel"); ok.type = "submit"; no.type = "button";
+      no.addEventListener("click", () => { renaming = null; render(); });
+      form.addEventListener("submit", (e) => { e.preventDefault(); renameJob(j, input.value); });
+      form.append(field, ok, no);
+      const wrap = el("div"); wrap.append(form, el("p", "hint", "It changes on every day and every line. The watch keeps its own name, so days you scan later are renamed here too."));
+      return wrap;
+    };
+    const renameButton = (j) => { const b = el("button", "btn small", "Rename"); b.type = "button"; b.addEventListener("click", () => { renaming = j; render(); const i = $("rename-" + jobs.indexOf(j)); if (i) { i.focus(); i.select(); } }); return b; };
     const info = $("invInfo");
     info.textContent = "";
     info.appendChild(waiting.length ? el("span", "chip todo", waiting.length === 1 ? "1 job to invoice" : `${waiting.length} jobs to invoice`) : el("span", "chip done", "All invoiced"));
@@ -12514,11 +12889,10 @@ if (typeof module === "object" && module.exports) module.exports = WorkTrackScan
       const hours = counted.filter((r) => r.row.unit === "h").reduce((s, r) => s + r.row.qty, 0), km = counted.filter((r) => r.row.unit === "km").reduce((s, r) => s + r.row.qty, 0);
       const priced = counted.length > 0 && counted.every((r) => r.amount !== null), total = counted.reduce((s, r) => s + (r.amount || 0), 0);
       const dates = [...new Set(mine.map((r) => r.date))];
-      const nice = (iso) => { const d = new Date(iso + "T00:00:00Z"); return `${WEEK[d.getUTCDay()]} ${d.getUTCDate()} ${MONTH[d.getUTCMonth()]}`; };
       const isOpen = unsentOpen.has(j), box = el("div", "ujob"), head = el("button", "ujob-head");
       head.type = "button"; head.setAttribute("aria-expanded", isOpen ? "true" : "false");
       head.append(el("span", "arrow"), el("span", "name", jobName(j)), el("span", "sum", `${I.comma(hours, 2)} h · ${km} km`),
-        el("span", "more", (dates.length === 1 ? nice(dates[0]) : `${dates.length} days, ${nice(dates[0])} to ${nice(dates[dates.length - 1])}`) + (priced ? ` · ${money(total)} kr excl. moms` : "")));
+        el("span", "more", (dates.length === 1 ? nice(dates[0]) : `${dates.length} days, ${nice(dates[0])} to ${nice(dates[dates.length - 1])}`) + (priced ? ` · ${money(total).replace(/ /g, "\u00a0")}\u00a0kr excl. moms` : "")));
       head.addEventListener("click", () => { if (unsentOpen.has(j)) unsentOpen.delete(j); else unsentOpen.add(j); render(); });
       box.appendChild(head);
       if (isOpen) {
@@ -12540,9 +12914,48 @@ if (typeof module === "object" && module.exports) module.exports = WorkTrackScan
         const latest = mine.filter((r) => r.day && hasMap && hasWhere(r.day)).map((r) => r.day).pop();
         if (latest) { const onMap = el("button", "btn small", dates.length === 1 ? "On the map" : "Last day on the map"); onMap.type = "button"; onMap.addEventListener("click", () => showOnMap(latest.key)); acts.appendChild(onMap); }
         body.appendChild(acts);
+        const acts2 = el("div", "acts"), mark = el("button", "btn small", "Mark as invoiced"); mark.type = "button";
+        let armed = false;
+        mark.addEventListener("click", () => {
+          if (!armed) { armed = true; mark.textContent = "Yes, mark as invoiced"; mark.classList.add("danger"); return; }
+          const now = new Date(), today = pad(now.getDate()) + "/" + pad(now.getMonth() + 1);
+          for (const r of mine) store.invoiced[r.key] = today;
+          unsentOpen.delete(j); save(); render();
+          say("ok", `${jobName(j)} marked as invoiced. It is now under Invoiced.`);
+        });
+        acts2.appendChild(mark);
+        if (j) acts2.appendChild(renameButton(j));
+        body.appendChild(acts2);
+        if (renaming === j && j) body.appendChild(renameForm(j));
         box.appendChild(body);
       }
       ubox.appendChild(box);
+    }
+    // ---- invoiced: the jobs with nothing waiting
+    const sent = jobs.filter((j) => !open(j)), sbox = $("sentJobs");
+    $("sentTitle").hidden = sbox.hidden = sent.length === 0;
+    sbox.textContent = "";
+    for (const j of sent) {
+      const mine = rows.filter((r) => r.job === j), counted = mine.filter((r) => r.row.qty > 0);
+      const hours = counted.filter((r) => r.row.unit === "h").reduce((s, r) => s + r.row.qty, 0), km = counted.filter((r) => r.row.unit === "km").reduce((s, r) => s + r.row.qty, 0);
+      const priced = counted.length > 0 && counted.every((r) => r.amount !== null), total = counted.reduce((s, r) => s + (r.amount || 0), 0);
+      const dates = [...new Set(mine.map((r) => r.date))], when = store.invoiced[mine[mine.length - 1].key];
+      const isOpen = unsentOpen.has(j), box = el("div", "ujob sent"), head = el("button", "ujob-head");
+      head.type = "button"; head.setAttribute("aria-expanded", isOpen ? "true" : "false");
+      head.append(el("span", "arrow"), el("span", "name", jobName(j)), el("span", "sum", `${I.comma(hours, 2)} h · ${km} km`),
+        el("span", "more", `Invoiced ${when} · ` + (dates.length === 1 ? nice(dates[0]) : `${dates.length} days, ${nice(dates[0])} to ${nice(dates[dates.length - 1])}`) + (priced ? ` · ${money(total).replace(/ /g, "\u00a0")}\u00a0kr excl. moms` : "")));
+      head.addEventListener("click", () => { if (unsentOpen.has(j)) unsentOpen.delete(j); else unsentOpen.add(j); render(); });
+      box.appendChild(head);
+      if (isOpen) {
+        const body = el("div", "ujob-body"), acts = el("div", "acts"), show = el("button", "btn small", "Show the lines"); show.type = "button";
+        show.addEventListener("click", () => { invJob = j; $("invOpen").checked = false; marking = false; render(); goTo($("invLinesTitle")); });
+        acts.appendChild(show);
+        if (j) acts.appendChild(renameButton(j));
+        body.append(acts, el("p", "hint", "Invoiced by mistake? Show the lines, then Mark as not invoiced."));
+        if (renaming === j && j) body.appendChild(renameForm(j));
+        box.appendChild(body);
+      }
+      sbox.appendChild(box);
     }
 
     const sel = $("invJob");
@@ -12598,6 +13011,95 @@ if (typeof module === "object" && module.exports) module.exports = WorkTrackScan
     mark.hidden = shown.length === 0;
     mark.textContent = marking ? (anyOpen ? "Yes, mark as invoiced" : "Yes, mark as not invoiced") : (anyOpen ? "Mark as invoiced" : "Mark as not invoiced");
     mark.classList.toggle("danger", marking);
+  }
+
+  // Give a job another name: on every day, every line and every invoice mark, now and for days scanned later.
+  function renameJob(from, text) {
+    const to = String(text || "").trim().replace(/\s+/g, " ").slice(0, 40);
+    if (!to) { say("error", "Type the new name first."); return; }
+    if (to === from) { renaming = null; render(); return; }
+    const rows = allRows(days()).filter((r) => r.day && r.row.qty > 0), isOpen = (job) => new Set(rows.filter((r) => r.job === job && !store.invoiced[r.key]).map((r) => r.day.key));
+    const openFrom = isOpen(from), openTo = isOpen(to), merged = rows.some((r) => r.job === to) || store.extras.some((x) => x.job === to);
+    for (const k of Object.keys(store.renames)) { if (store.renames[k] === from) store.renames[k] = to; if (store.renames[k] === k) delete store.renames[k]; }
+    store.renames[from] = to;
+    // the invoice marks follow the name; where the two jobs meet on one day, a mark stays only if both had it
+    for (const k of Object.keys(store.invoiced)) {
+      const cut = k.indexOf("|"), dayKey = k.slice(0, cut);
+      if (dayKey === "x" || k.slice(cut + 1) !== from) continue;
+      if (!openTo.has(dayKey)) store.invoiced[dayKey + "|" + to] = store.invoiced[k];
+      delete store.invoiced[k];
+    }
+    for (const dayKey of openFrom) delete store.invoiced[dayKey + "|" + to];
+    for (const x of store.extras) if (x.job === from) x.job = to;
+    if (invJob === from) invJob = to;
+    if (chartJob === from) chartJob = to;
+    if (unsentOpen.delete(from)) unsentOpen.add(to);
+    renaming = null; save(); render();
+    say("ok", merged ? `${from} is now part of ${to}.` : `Renamed ${from} to ${to}, on every day and line.`);
+  }
+
+  // ---- Statistics: hours, kilometres and money for a period ---------------------------
+  let moneyPeriod = "month";
+  const kr = (v) => String(Math.round(v)).replace(/\B(?=(\d{3})+(?!\d))/g, " ");
+  function renderMoney(list) {
+    const rows = allRows(list).filter((r) => r.row.qty > 0);
+    $("money").hidden = rows.length === 0;
+    $("statsEmpty").hidden = rows.length > 0 || list.length > 0;
+    if (!rows.length) return;
+    const now = todayIso(), last = new Date(Date.UTC(+now.slice(0, 4), +now.slice(5, 7) - 2, 1)).toISOString().slice(0, 7);
+    const PERIODS = [["month", "This month", now.slice(0, 7)], ["last", "Last month", last], ["year", "This year", now.slice(0, 4)], ["all", "Everything", ""]];
+    const holder = $("moneyPeriods");
+    if (!holder.children.length) for (const [id, text] of PERIODS) {
+      const lab = el("label"), input = el("input", "sr"); input.type = "radio"; input.name = "moneyPeriod"; input.value = id; input.id = "money-" + id;
+      input.addEventListener("change", () => { if (input.checked) { moneyPeriod = id; renderMoney(days()); } });
+      lab.append(input, el("span", "", text)); holder.appendChild(lab);
+    }
+    for (const input of holder.querySelectorAll("input")) input.checked = input.value === moneyPeriod;
+    const mine = rows.filter((r) => r.date.startsWith(PERIODS.find((x) => x[0] === moneyPeriod)[2]));
+    const sum = (list, f) => list.reduce((s, r) => s + f(r), 0), qty = (kind) => sum(mine.filter((r) => r.row.kind === kind), (r) => r.row.qty);
+    const priced = mine.filter((r) => r.amount !== null), anyPrice = rows.some((r) => r.amount !== null);
+    const earned = sum(priced, (r) => r.amount), done = sum(priced.filter((r) => store.invoiced[r.key]), (r) => r.amount);
+    const tiles = $("moneyTiles");
+    tiles.textContent = "";
+    for (const [k, v, u] of [["Work", I.comma(qty("work"), 2), "hours"], ["Drive", I.comma(qty("drive"), 2), "hours"], ["Driven", String(qty("km")), "km"],
+      ["Earned", anyPrice ? kr(earned) : "–", "kr excl. moms"], ["Invoiced", anyPrice ? kr(done) : "–", "kr"], ["Not invoiced yet", anyPrice ? kr(earned - done) : "–", "kr"]]) {
+      const tile = el("div", "tile"); tile.append(el("span", "k", k), el("span", "v", v), el("span", "u", u)); tiles.appendChild(tile);
+    }
+    { // heart rate in the period, when the watch sent it: every stretch counts for as long as it lasted
+      const prefix = PERIODS.find((x) => x[0] === moneyPeriod)[2], acc = { work: [0, 0], drive: [0, 0], pause: [0, 0] };
+      for (const day of list) {
+        if (day.summed) continue;
+        day.parts.forEach((p, i) => {
+          if (p.hr > 0 && p.to > p.from && isoAt(day, p.from).startsWith(prefix)) { acc[p.kind][0] += p.hr * (p.to - p.from); acc[p.kind][1] += p.to - p.from; }
+          const gap = i > 0 ? p.from - day.parts[i - 1].to : 0;                    // a pause: the day's one pause number, for as long as this pause was
+          if (day.pauseHr > 0 && gap >= 60 && isoAt(day, p.from).startsWith(prefix)) { acc.pause[0] += day.pauseHr * gap; acc.pause[1] += gap; }
+        });
+      }
+      for (const [k, a] of [["Heart at work", acc.work], ["Heart driving", acc.drive], ["Heart in pauses", acc.pause]]) {
+        if (!a[1]) continue;
+        const tile = el("div", "tile"); tile.append(el("span", "k", k), el("span", "v", String(Math.round(a[0] / a[1]))), el("span", "u", "beats a minute")); tiles.appendChild(tile);
+      }
+    }
+    const hint = $("moneyHint"), bare = mine.length - priced.length;
+    hint.hidden = anyPrice && bare === 0;
+    hint.textContent = !anyPrice ? "To see money here, type your prices under Jobs, at the bottom: Fortnox articles and prices."
+      : `${bare} ${bare === 1 ? "line has" : "lines have"} no price, so ${bare === 1 ? "it is" : "they are"} not in the money. Prices are under Jobs, at the bottom.`;
+    // per job: the longest bar is the job that brought in the most (or took the most hours, without prices)
+    const jobs = new Map();
+    for (const r of mine) { const j = jobs.get(r.job) || { name: r.job, hours: 0, km: 0, kr: 0 }; if (r.row.unit === "h") j.hours += r.row.qty; if (r.row.unit === "km") j.km += r.row.qty; j.kr += r.amount || 0; jobs.set(r.job, j); }
+    const size = (j) => (anyPrice ? j.kr : j.hours), list2 = [...jobs.values()].sort((a, b) => size(b) - size(a)), most = Math.max(...list2.map(size), 0.01);
+    const jb = $("moneyJobs");
+    jb.textContent = "";
+    $("moneyJobsTitle").textContent = anyPrice ? "Money per job" : "Hours per job";
+    if (!list2.length) jb.appendChild(el("p", "hint", "Nothing is counted in this period."));
+    for (const j of list2) {
+      const b = el("button", "job-row"); b.type = "button";
+      b.setAttribute("aria-label", `${jobName(j.name)}: ${hText(j.hours)}, ${j.km} km` + (anyPrice ? `, ${kr(j.kr)} kr` : "") + ". Open the job.");
+      const track = el("span", "track"), seg = el("i", "m"); seg.style.width = (size(j) / most) * 100 + "%"; track.appendChild(seg);
+      b.append(el("span", "job-name", jobName(j.name)), el("span", "job-val", anyPrice ? `${kr(j.kr)} kr · ${hText(j.hours)}` : `${hText(j.hours)} · ${j.km} km`), track);
+      b.addEventListener("click", () => { invJob = j.name; unsentOpen.add(j.name); go("jobs"); });
+      jb.appendChild(b);
+    }
   }
 
   function shownRows() {
@@ -12700,6 +13202,7 @@ if (typeof module === "object" && module.exports) module.exports = WorkTrackScan
     const nLines = takeExtras(o.extras);
     for (const [k, v] of Object.entries(o.invoiced || {})) if (typeof v === "string" && !(k in store.invoiced)) store.invoiced[k] = v;
     for (const [k, v] of Object.entries(o.notes || {})) if (typeof v === "string" && v && !store.notes[k]) store.notes[k] = v.slice(0, 500);
+    takeRenames(o.renames);
     if (o.articles && typeof o.articles === "object") for (const kind of ["drive", "km", "work"]) {
       const a = o.articles[kind], mine = store.articles[kind];
       if (a && typeof a === "object") { if (!mine.art && a.art) mine.art = String(a.art).slice(0, 12); if (!mine.price && a.price) mine.price = String(a.price).slice(0, 10); }
@@ -12725,13 +13228,17 @@ if (typeof module === "object" && module.exports) module.exports = WorkTrackScan
   }
 
   function render() {
+    showTab();
     const list = days(), real = list.length > 0;
-    const shown = real ? list : [EXAMPLE];
+    const inMonth = renderCal(list);
+    const shown = !real ? [EXAMPLE] : ALL ? list : list.filter((d) => inMonth.has(d.key));     // one month at a time
     const holder = $("days");
     holder.textContent = "";
     for (const d of shown.slice().reverse()) holder.appendChild(dayBlock(d));      // newest on top
-    const anyOpen = list.some((d) => openDays.has(d.key));
-    $("foldAll").hidden = list.length < 2;
+    todayCard(list);
+    renderMoney(list);
+    const anyOpen = shown.some((d) => openDays.has(d.key));
+    $("foldAll").hidden = shown.length < 2 || !real;
     $("foldAll").textContent = anyOpen ? "Close all days" : "Open all days";
 
     $("all").hidden = list.length < 1;
@@ -12768,7 +13275,13 @@ if (typeof module === "object" && module.exports) module.exports = WorkTrackScan
     for (const r of document.querySelectorAll('input[name="round"]')) r.checked = Number(r.value) === store.roundMin;
   }
 
-  function say(kind, text) { const s = $("status"); s.dataset.kind = kind; s.textContent = text; }
+  let sayTimer = 0;
+  function say(kind, text) {
+    const s = $("status"); s.dataset.kind = kind; s.textContent = text; s.classList.remove("gone");
+    clearTimeout(sayTimer);
+    if (!ALL && kind !== "busy") sayTimer = setTimeout(() => s.classList.add("gone"), kind === "error" ? 12000 : 6000);     // the notice floats over the page, so it leaves by itself
+  }
+  $("status").addEventListener("click", () => $("status").classList.add("gone"));
 
   // ---- reading a photo -----------------------------------------------------
   async function openPicture(file) {
@@ -12796,33 +13309,115 @@ if (typeof module === "object" && module.exports) module.exports = WorkTrackScan
       const hit = await WorkTrackScan.read(picture, jsQR, breathe);
       if (picture.close) picture.close();
       if (!hit) { say("error", "No code found in this photo. Go closer, so the watch fills a quarter of the picture or more, hold still, keep lamp reflections off the glass, and try again."); return; }
-      let day;
-      try { day = C.unpackDay(hit.bytes); } catch (e) { say("error", e.message); return; }
-      const key = String(day.start), had = key in store.days;
-      store.days[key] = C.toBase64(hit.bytes);
-      fresh = key; removing = null; openDays.add(key);
-      save(); render();
-      say("ok", (had ? "Read again: " : "Added ") + dateTitle(day) + ".");
-      const block = $("day-" + key);
-      if (block && block.scrollIntoView) block.scrollIntoView({ block: "nearest", behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
-      setTimeout(() => { if (fresh === key) { fresh = null; const b = $("day-" + key); if (b) b.classList.remove("fresh"); } }, 4000);
+      try { C.unpackDay(hit.bytes); } catch (e) { say("error", e.message); return; }
+      takeDay(hit.bytes);
     } finally { busy = false; }
   }
-  for (const id of ["cam", "pick"]) $(id).addEventListener("change", (e) => { const f = e.target.files && e.target.files[0]; e.target.value = ""; addPhoto(f); });
+  // A code that was read, from the camera or from a photo: keep the day and show it.
+  function takeDay(bytes) {
+    const day = C.unpackDay(bytes), key = String(day.start), had = key in store.days;
+    store.days[key] = C.toBase64(bytes);
+    fresh = key; todayKey = key; removing = null; openDays.add(key);
+    calMonth = isoDate(day).slice(0, 7); calPick = null;
+    setTab("today"); save(); render();
+    say("ok", (had ? "Read again: " : "Added ") + dateTitle(day) + ".");
+    const block = ALL ? $("day-" + key) : $("today-" + key);
+    if (block && block.scrollIntoView) block.scrollIntoView({ block: "nearest", behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
+    setTimeout(() => { if (fresh === key) { fresh = null; for (const id of ["day-" + key, "today-" + key]) { const b = $(id); if (b) b.classList.remove("fresh"); } } }, 4000);
+  }
+  for (const id of ["cam", "pick"]) {
+    $(id).addEventListener("change", (e) => { const f = e.target.files && e.target.files[0]; e.target.value = ""; closeScanner(); addPhoto(f); });
+    $(id).addEventListener("cancel", closeScanner);        // no photo taken after all
+  }
+
+  // ---- reading the code straight from the camera: no photo to take --------------------
+  let stream = null, scanTimer = 0, scanTurn = 0;
+  const scanCanvas = document.createElement("canvas");
+  async function openScanner() {
+    if (typeof jsQR !== "function") { say("error", "The code reader did not load. Close the app and open it again."); return; }
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) { $("cam").click(); return; }     // no live camera here: the photo way
+    $("scanner").hidden = false;
+    $("scanSay").textContent = "Starting the camera…";
+    let got = null;
+    try { got = await navigator.mediaDevices.getUserMedia({ audio: false, video: { facingMode: { ideal: "environment" }, width: { ideal: 1920 }, height: { ideal: 1080 } } }); }
+    catch (e) { $("scanSay").textContent = "The camera did not start. Tap Take a photo instead."; return; }
+    if ($("scanner").hidden) { for (const track of got.getTracks()) track.stop(); return; }     // closed while the phone was asking
+    stream = got;
+    const video = $("scanVideo");
+    video.srcObject = stream;
+    try { await video.play(); } catch (e) { /* it starts by itself on most phones */ }
+    if (!stream) return;                                  // closed, or handed over to a photo, meanwhile
+    $("scanSay").textContent = "Point the phone at the code on the watch. It is read by itself.";
+    scanTurn = 0; clearTimeout(scanTimer); scanTimer = setTimeout(scanTick, 250);
+  }
+  function scanTick() {
+    if ($("scanner").hidden || !stream) return;
+    const video = $("scanVideo"), W = video.videoWidth, H = video.videoHeight;
+    let bytes = null;
+    if (W && H) {
+      // by turns: the whole picture made smaller (a code held close), and the middle as sharp as it is (a code further off)
+      const whole = scanTurn++ % 2 === 0, side = Math.round(Math.min(W, H) * 0.62), sw = whole ? W : side, sh = whole ? H : side;
+      const scale = Math.min(1, (whole ? 1280 : 1100) / Math.max(sw, sh)), dw = Math.max(1, Math.round(sw * scale)), dh = Math.max(1, Math.round(sh * scale));
+      scanCanvas.width = dw; scanCanvas.height = dh;
+      const ctx = scanCanvas.getContext("2d", { willReadFrequently: true });
+      ctx.drawImage(video, Math.round((W - sw) / 2), Math.round((H - sh) / 2), sw, sh, 0, 0, dw, dh);
+      const px = ctx.getImageData(0, 0, dw, dh), hit = jsQR(px.data, dw, dh, { inversionAttempts: "dontInvert" });
+      if (hit && hit.binaryData && hit.binaryData.length) bytes = Array.from(hit.binaryData);
+    }
+    if (bytes) {
+      let ok = true;
+      try { C.unpackDay(bytes); } catch (e) { ok = false; $("scanSay").textContent = e.message + " Point at the code on the watch."; }
+      if (ok) { closeScanner(); if (navigator.vibrate) navigator.vibrate(60); takeDay(bytes); return; }
+    }
+    scanTimer = setTimeout(scanTick, 140);
+  }
+  function stopCamera() {
+    clearTimeout(scanTimer);
+    if (stream) for (const track of stream.getTracks()) track.stop();
+    stream = null; $("scanVideo").srcObject = null;
+  }
+  function closeScanner() { stopCamera(); $("scanner").hidden = true; }
+  // "Take a photo instead": the phone's own camera needs the lens, so the live one lets go of it first
+  document.querySelector('#scanner label[for="cam"]').addEventListener("click", () => { stopCamera(); $("scanSay").textContent = "Take the photo. It is read when you tap Use Photo."; });
+  $("scanLive").addEventListener("click", openScanner);
+  $("scanClose").addEventListener("click", closeScanner);
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !$("scanner").hidden) closeScanner(); });
+  document.addEventListener("visibilitychange", () => { if (document.hidden) closeScanner(); });      // the camera never stays on behind your back
 
   for (const r of document.querySelectorAll('input[name="round"]')) r.addEventListener("change", () => { if (r.checked) { store.roundMin = Number(r.value); save(); render(); } });
   $("foldAll").addEventListener("click", () => {
-    const list = days();
+    const list = days().filter((d) => $("day-" + d.key));      // the days on the screen
     if (list.some((d) => openDays.has(d.key))) openDays.clear(); else for (const d of list) openDays.add(d.key);
     render();
   });
   $("copyAll").addEventListener("click", () => copy(days().map((d) => I.asText(linesOf(d).rows)).filter(Boolean).join("\n"), () => flash($("copyAll"), "Copied")));
 
+  // ---- which version this is, and getting the next one --------------------------------
+  const APP = "8", BUILT = "23 Nov 2026";
+  $("aboutText").textContent = `WorkTrack Days, app ${APP}` + (BUILT.startsWith("__") ? "." : `, made ${BUILT}.`);
+  $("updateNow").addEventListener("click", () => location.reload());
+  $("updateCheck").hidden = true;
+
   load();
   { const first = days(); if (first.length === 1) openDays.add(first[0].key); }
+  setTab("today");
   render();
   save();
-  if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(() => {});
+  if ("serviceWorker" in navigator) {
+    // A new version fetches itself in the background; a bar then offers it. No closing and opening twice.
+    const had = !!navigator.serviceWorker.controller;        // false the very first time: nothing to update then
+    let reg = null;
+    navigator.serviceWorker.addEventListener("controllerchange", () => { if (had) { $("updateBar").hidden = false; say("ok", "A new version is ready. Tap Use it now, at the top."); } });
+    navigator.serviceWorker.register("sw.js").then((r) => { reg = r; }).catch(() => {});
+    document.addEventListener("visibilitychange", () => { if (!document.hidden && reg) reg.update().catch(() => {}); });
+    $("updateCheck").hidden = false;
+    $("updateCheck").addEventListener("click", async () => {
+      if (!reg) { say("error", "This phone does not keep the app for offline use, so there is nothing to look for."); return; }
+      say("busy", "Looking for a new version…");
+      try { await reg.update(); } catch (e) { say("error", "Could not look: no internet. You have app " + APP + "."); return; }
+      if (reg.installing || reg.waiting) say("busy", "Found a new version. Fetching it…"); else if ($("updateBar").hidden) say("ok", "You have the newest version, app " + APP + ".");
+    });
+  }
 })();
 </script>
 
