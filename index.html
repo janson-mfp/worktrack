@@ -204,6 +204,8 @@
   .fix-form .field { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
   .fix-form label, .fix-form legend, .hand-row label { font: 600 13px var(--font-text); letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-soft); }
   .fix-form input[type="text"] { flex: none; width: 100%; }
+  .pick { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+  .fix-form select { min-height: 44px; font-weight: 500; text-overflow: ellipsis; }
   input[type="time"], input[type="date"] { width: 100%; min-width: 0; min-height: 44px; padding: 8px 10px; border-radius: 10px; border: 1.5px solid var(--rule); background: var(--sheet); color: var(--ink); font: 600 17px var(--font-text); font-variant-numeric: tabular-nums; -webkit-appearance: none; appearance: none; }
   input[type="time"]:focus-visible, input[type="date"]:focus-visible, select:focus-visible { outline: 3px solid var(--sign); outline-offset: 2px; }
   .fix-form .seg legend { margin-bottom: 4px; }
@@ -696,8 +698,6 @@
   </div>
 </div>
 
-<datalist id="jobNames"></datalist>
-<datalist id="placeNames"></datalist>
 
 <div id="manual" hidden>
   <p><strong>This phone did not let the page copy.</strong> Press and hold the text, choose Select all, then Copy.</p>
@@ -11901,6 +11901,20 @@ if (typeof module === "object" && module.exports) module.exports = WorkTrackScan
     setTimeout(() => { button.textContent = was; }, 1400);
   }
 
+  // The phone offers saved passwords in any field it takes for a sign-in (a "name" is enough). Nothing here is one:
+  // every text field says so, in the ways iPhones and password apps look for, and has no spell check or auto-correct.
+  let fieldNo = 0;
+  function calm() {
+    for (const f of document.forms) f.setAttribute("autocomplete", "off");
+    for (const i of document.querySelectorAll('input[type="text"]')) {
+      if (i.dataset.calm) continue;
+      i.dataset.calm = "1";
+      i.setAttribute("autocomplete", "off"); i.setAttribute("autocorrect", "off"); i.setAttribute("spellcheck", "false");
+      if (!i.name) i.name = "wt" + (fieldNo++);
+      i.setAttribute("data-1p-ignore", ""); i.setAttribute("data-lpignore", "true"); i.setAttribute("data-bwignore", "true"); i.setAttribute("data-form-type", "other");
+    }
+  }
+
   // ---- one screen at a time ----------------------------------------------------
   const ALL = location.hash === "#all";       // every screen on one page, as before: the tests use it
   if (ALL) document.documentElement.classList.add("flat");
@@ -12022,8 +12036,8 @@ if (typeof module === "object" && module.exports) module.exports = WorkTrackScan
       const label = el("label", "", spot.arrived ? `Where did you arrive at ${clock(day, spot.when)}?` : `Where did you set off from at ${clock(day, spot.when)}?`);
       label.htmlFor = id;
       const row = el("div", "ask-row"), input = el("input");
-      input.type = "text"; input.id = id; input.autocomplete = "off"; input.placeholder = "Name of the place"; input.maxLength = 40;
-      const ok = el("button", "btn small", "Save name"); ok.type = "submit";
+      input.type = "text"; input.id = id; input.autocomplete = "off"; input.placeholder = "What is it called?"; input.maxLength = 40;
+      const ok = el("button", "btn small", "Save"); ok.type = "submit";
       row.append(input, ok);
       if (spot.suggest && !store.places.some((p) => p.name === spot.suggest)) {
         const quick = el("button", "btn small", `Call it ${spot.suggest}`); quick.type = "button";
@@ -12130,7 +12144,7 @@ if (typeof module === "object" && module.exports) module.exports = WorkTrackScan
           const li = el("li"), b = el("button", "tl-row " + r.kind); b.type = "button";
           const word = el("span", "word"); word.append(el("i"), KIND[r.kind]);
           const what = r.kind === "pause" ? measured(Math.round((r.to - r.from) / 60))
-            : (r.kind === "drive" ? `${place(r.part.a, r.part.an)} → ${place(r.part.b, r.part.bn)} · ${kmText(r.part.metres)} km` : jobName(r.part.project)) + bpm(r.part.hr);
+            : (r.kind === "drive" ? `${place(r.part.a, r.part.an)} → ${place(r.part.b, r.part.bn)} · ${kmText(r.part.metres)} km · for ${jobName(r.part.project)}` : jobName(r.part.project)) + bpm(r.part.hr);
           b.append(el("span", "when", `${clock(day, r.from)}–${clock(day, r.to)}`), word, el("span", "what", what));
           b.addEventListener("click", () => {             // straight to the form that changes this row
             fixing = r.kind === "pause" ? { key: day.key, what: "pause", before: r.before } : { key: day.key, what: "part", index: r.index };
@@ -12280,12 +12294,31 @@ if (typeof module === "object" && module.exports) module.exports = WorkTrackScan
   }
 
   // The one small form: for a new row, for changing a row, and for changing a pause.
+  // A list to pick from. Its last choice, "Another…", opens a field to type a new one in.
+  const OTHER = "\u0001other";
+  function picker(id, names, value, o) {
+    const box = el("div", "pick"), sel = el("select"), text = el("input");
+    sel.id = id;
+    const add = (v, label) => { const opt = el("option", "", label); opt.value = v; sel.appendChild(opt); };
+    if (o.none) add("", o.none);
+    const list = [...new Set(names.filter(Boolean))];
+    if (value && !list.includes(value)) list.unshift(value);
+    for (const n of list) add(n, n);
+    add(OTHER, o.other);
+    sel.value = value && list.includes(value) ? value : o.none ? "" : list.length ? list[0] : OTHER;
+    text.type = "text"; text.id = id + "-other"; text.maxLength = o.max; text.placeholder = o.hint; text.setAttribute("aria-label", o.hint);
+    text.hidden = sel.value !== OTHER;
+    sel.addEventListener("change", () => { text.hidden = sel.value !== OTHER; calm(); if (!text.hidden) text.focus(); });
+    box.append(sel, text);
+    return { box, sel, text, get: () => (sel.value === OTHER ? text.value.trim() : sel.value), typing: () => sel.value === OTHER };
+  }
+
   function fixForm(day, f, row) {
     const form = el("form", "fix-form"), id = (s) => `fix-${day.key}-${s}`;
     form.id = id("form");
     const isPause = f.what === "pause", orig = row ? { from: row.from, to: row.to } : null, part = row && row.part ? row.part : null;
     const input = (name, type, value) => { const i = el("input"); i.type = type; i.id = id(name); i.value = value; i.autocomplete = "off"; return i; };
-    const field = (text, inp, wide) => { const d = el("div", "field" + (wide ? " wide" : "")), l = el("label", "", text); l.htmlFor = inp.id; d.append(l, inp); return d; };
+    const field = (text, inp, wide, box) => { const d = el("div", "field" + (wide ? " wide" : "")), l = el("label", "", text); l.htmlFor = inp.id; d.append(l, box || inp); return d; };
 
     let kind = isPause ? "pause" : part ? part.kind : "work";
     if (!isPause) {
@@ -12302,14 +12335,14 @@ if (typeof module === "object" && module.exports) module.exports = WorkTrackScan
     const last = day.parts[day.parts.length - 1];
     const fromIn = input("from", "time", orig ? clock(day, orig.from) : last ? clock(day, last.to) : "");
     const toIn = input("to", "time", orig ? clock(day, orig.to) : "");
-    const jobIn = input("job", "text", part ? part.project : last ? last.project : jobList[0] || "");
-    jobIn.maxLength = 60; jobIn.setAttribute("list", "jobNames"); jobIn.placeholder = "Name of the job";
+    // every job you have, to pick from: a drive or a stretch booked on the wrong one is two taps to put right
+    const jobIn = picker(id("job"), jobList, part ? part.project : last ? last.project : jobList[0] || "", { none: "No project", other: "Another job…", hint: "Type the job", max: 60 });
     const kmIn = input("km", "text", part && part.kind === "drive" ? kmText(part.metres) : "");
     kmIn.inputMode = "decimal"; kmIn.maxLength = 7; kmIn.placeholder = "102";
     const shown = (pt, typed) => { if (typed) return typed; const p = pt ? I.findPlace(store.places, pt) : null; return p ? p.name : ""; };
-    const aIn = input("a", "text", part ? shown(part.a, part.an) : ""), bIn = input("b", "text", part ? shown(part.b, part.bn) : "");
-    for (const i of [aIn, bIn]) { i.maxLength = 40; i.setAttribute("list", "placeNames"); }
-    const jobF = field("Job", jobIn, true), kmF = field("Kilometres", kmIn, true), aF = field("From place", aIn), bF = field("To place", bIn);
+    const placeList = [...new Set(store.places.map((p) => p.name))], placeOpts = { none: "Not known", other: "Another place…", hint: "Type the place", max: 40 };
+    const aIn = picker(id("a"), placeList, part ? shown(part.a, part.an) : "", placeOpts), bIn = picker(id("b"), placeList, part ? shown(part.b, part.bn) : "", placeOpts);
+    const jobF = field("Job", jobIn.sel, true, jobIn.box), kmF = field("Kilometres", kmIn, true), aF = field("From place", aIn.sel, false, aIn.box), bF = field("To place", bIn.sel, false, bIn.box);
     form.append(field("From", fromIn), field("To", toIn), jobF, kmF, aF, bF);
     const show = () => { jobF.hidden = kind === "pause"; kmF.hidden = aF.hidden = bF.hidden = kind !== "drive"; };
     show();
@@ -12356,7 +12389,8 @@ if (typeof module === "object" && module.exports) module.exports = WorkTrackScan
         setParts(day, T.cut(parts, from, to), `Pause ${span} saved.`);
         return;
       }
-      const next = { kind, project: jobIn.value.trim().slice(0, 60), from, to, metres: 0, a: null, b: null, an: "", bn: "", hr: part && part.kind === kind ? part.hr || 0 : 0 };
+      if (jobIn.typing() && !jobIn.get()) { say("error", "Type the job, or pick one from the list."); jobIn.text.focus(); return; }
+      const next = { kind, project: jobIn.get().slice(0, 60), from, to, metres: 0, a: null, b: null, an: "", bn: "", hr: part && part.kind === kind ? part.hr || 0 : 0 };
       if (kind === "drive") {
         const km = kmIn.value.trim() ? num(kmIn.value) : 0;
         if (km === null || km < 0 || km > 3000) { say("error", "Type the kilometres as a number, like 102 or 23,5."); return; }
@@ -12370,8 +12404,8 @@ if (typeof module === "object" && module.exports) module.exports = WorkTrackScan
           if (!pt) { const known = store.places.find((q) => q.name.toLowerCase() === text.toLowerCase()); if (known) return [{ lat: known.lat, lon: known.lon }, ""]; }
           return [pt, text];
         };
-        [next.a, next.an] = end(aIn.value, old ? old.a : null);
-        [next.b, next.bn] = end(bIn.value, old ? old.b : null);
+        [next.a, next.an] = end(aIn.get(), old ? old.a : null);
+        [next.b, next.bn] = end(bIn.get(), old ? old.b : null);
       }
       setParts(day, T.put(parts, next), `${KIND[kind]} ${span} ${f.what === "new" ? "added" : "saved"}.` + (taken >= 60 ? ` It took the place of ${measured(Math.round(taken / 60))} counted before.` : ""));
     });
@@ -12641,8 +12675,8 @@ if (typeof module === "object" && module.exports) module.exports = WorkTrackScan
   }
   function nameForm(point, suggest) {
     const form = el("form", "acts"), input = el("input");
-    input.type = "text"; input.maxLength = 40; input.autocomplete = "off"; input.placeholder = "Name of the place"; input.setAttribute("aria-label", "Name of the place");
-    const ok = el("button", "btn small go", "Save name"); ok.type = "submit";
+    input.type = "text"; input.maxLength = 40; input.autocomplete = "off"; input.placeholder = "What is it called?"; input.setAttribute("aria-label", "What the place is called");
+    const ok = el("button", "btn small go", "Save"); ok.type = "submit";
     form.append(input, ok);
     if (suggest && !store.places.some((p) => p.name === suggest)) {
       const quick = el("button", "btn small", `Call it ${suggest}`); quick.type = "button";
@@ -12772,8 +12806,8 @@ if (typeof module === "object" && module.exports) module.exports = WorkTrackScan
         } else kids.push(el("small", "", oneDay ? "Nothing happened here on this day." : "Nothing has happened here yet."));
         if (s.place) {
           const place = s.place, form = el("form", "acts"), input = el("input");
-          input.type = "text"; input.maxLength = 40; input.autocomplete = "off"; input.value = place.name; input.setAttribute("aria-label", "Name of the place");
-          const ok = el("button", "btn small go", "Save name"); ok.type = "submit";
+          input.type = "text"; input.maxLength = 40; input.autocomplete = "off"; input.value = place.name; input.setAttribute("aria-label", "What the place is called");
+          const ok = el("button", "btn small go", "Save"); ok.type = "submit";
           form.append(input, ok);
           form.addEventListener("submit", (e) => { e.preventDefault(); const v = input.value.trim().slice(0, 40); if (!v) return; place.name = v; save(); render(); say("ok", "Renamed to " + v + "."); });
           kids.push(el("small", "", "Drives that begin or end within 800 m of here get this name."), form,
@@ -12862,8 +12896,8 @@ if (typeof module === "object" && module.exports) module.exports = WorkTrackScan
     const nice = niceIso;
     // The small form that gives a job another name, on every day and line.
     const renameForm = (j) => {
-      const form = el("form", "rename"), field = el("div", "field"), input = el("input"), id = "rename-" + jobs.indexOf(j);
-      const lab = el("label", "", "Name or number of this job"); lab.htmlFor = id;
+      const form = el("form", "rename"), field = el("div", "field"), input = el("input"), id = "retitle-" + jobs.indexOf(j);
+      const lab = el("label", "", "What the job is called, or its number"); lab.htmlFor = id;
       input.type = "text"; input.id = id; input.maxLength = 40; input.value = j; input.autocomplete = "off";
       field.append(lab, input);
       const ok = el("button", "btn small go", "Save"), no = el("button", "btn small", "Cancel"); ok.type = "submit"; no.type = "button";
@@ -12873,7 +12907,7 @@ if (typeof module === "object" && module.exports) module.exports = WorkTrackScan
       const wrap = el("div"); wrap.append(form, el("p", "hint", "It changes on every day and every line. The watch keeps its own name, so days you scan later are renamed here too."));
       return wrap;
     };
-    const renameButton = (j) => { const b = el("button", "btn small", "Rename"); b.type = "button"; b.addEventListener("click", () => { renaming = j; render(); const i = $("rename-" + jobs.indexOf(j)); if (i) { i.focus(); i.select(); } }); return b; };
+    const renameButton = (j) => { const b = el("button", "btn small", "Rename"); b.type = "button"; b.addEventListener("click", () => { renaming = j; render(); const i = $("retitle-" + jobs.indexOf(j)); if (i) { i.focus(); i.select(); } }); return b; };
     const info = $("invInfo");
     info.textContent = "";
     info.appendChild(waiting.length ? el("span", "chip todo", waiting.length === 1 ? "1 job to invoice" : `${waiting.length} jobs to invoice`) : el("span", "chip done", "All invoiced"));
@@ -13227,7 +13261,8 @@ if (typeof module === "object" && module.exports) module.exports = WorkTrackScan
     });
   }
 
-  function render() {
+  function render() { draw(); calm(); }
+  function draw() {
     showTab();
     const list = days(), real = list.length > 0;
     const inMonth = renderCal(list);
@@ -13249,10 +13284,6 @@ if (typeof module === "object" && module.exports) module.exports = WorkTrackScan
     }
     renderInvoice(list);
     jobList = [...new Set(list.slice().reverse().flatMap((d) => d.parts.map((p) => p.project)).concat(store.extras.map((x) => x.job)).filter(Boolean))];
-    for (const [id, names] of [["jobNames", jobList], ["placeNames", [...new Set(store.places.map((p) => p.name))]]]) {
-      const dl = $(id); dl.textContent = "";
-      for (const n of names) { const o = el("option"); o.value = n; dl.appendChild(o); }
-    }
     renderCharts(list);
     renderMap(list);
     for (const [id, kind, field] of [["artDrive", "drive", "art"], ["priceDrive", "drive", "price"], ["artKm", "km", "art"], ["priceKm", "km", "price"], ["artWork", "work", "art"], ["priceWork", "work", "price"]]) {
@@ -13264,7 +13295,7 @@ if (typeof module === "object" && module.exports) module.exports = WorkTrackScan
     pl.textContent = "";
     store.places.forEach((p, i) => {
       const li = el("li"), input = el("input");
-      input.type = "text"; input.id = "place-name-" + i; input.value = p.name; input.maxLength = 40; input.setAttribute("aria-label", "Name of place " + (i + 1));
+      input.type = "text"; input.id = "place-called-" + i; input.value = p.name; input.maxLength = 40; input.setAttribute("aria-label", "Place " + (i + 1));
       input.addEventListener("change", () => { const v = input.value.trim(); if (v) { p.name = v.slice(0, 40); save(); render(); say("ok", "Renamed to " + p.name + "."); } else input.value = p.name; });
       const map = el("a", "", "Map"); map.href = `https://maps.apple.com/?ll=${p.lat},${p.lon}&q=${p.lat},${p.lon}`; map.target = "_blank"; map.rel = "noopener";
       const rm = el("button", "btn small danger", "Forget"); rm.type = "button";
@@ -13393,7 +13424,7 @@ if (typeof module === "object" && module.exports) module.exports = WorkTrackScan
   $("copyAll").addEventListener("click", () => copy(days().map((d) => I.asText(linesOf(d).rows)).filter(Boolean).join("\n"), () => flash($("copyAll"), "Copied")));
 
   // ---- which version this is, and getting the next one --------------------------------
-  const APP = "8", BUILT = "23 Nov 2026";
+  const APP = "9", BUILT = "24 Nov 2026";
   $("aboutText").textContent = `WorkTrack Days, app ${APP}` + (BUILT.startsWith("__") ? "." : `, made ${BUILT}.`);
   $("updateNow").addEventListener("click", () => location.reload());
   $("updateCheck").hidden = true;
