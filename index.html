@@ -415,6 +415,8 @@
   /* Jobs: renaming */
   .rename { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; gap: 8px; align-items: end; }
   .rename .field { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+  .car { display: flex; flex-direction: column; gap: 4px; padding-top: 10px; border-top: 1px solid var(--rule); }
+  .car input { width: 22px; height: 22px; flex: none; }
   .rename label { font: 600 13px var(--font-text); letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-soft); }
   .rename input[type="text"] { flex: none; width: 100%; }
   .ujob.sent .ujob-head .name, .ujob.sent .ujob-head .sum { color: var(--ink-soft); }
@@ -11794,7 +11796,9 @@ if (typeof module === "object" && module.exports) module.exports = WorkTrackScan
     extras: [],                                            // lines added by hand: { id, job, date, text, qty, unit, price }
     notes: {},                                             // day start -> what you wrote about that day
     edits: {},                                             // day start -> the day's stretches after you changed them by hand
-    renames: {} };                                         // the job's name on the watch -> the name you gave it here
+    renames: {},                                           // the job's name on the watch -> the name you gave it here
+    otherCar: {},                                          // jobs driven in someone else's car: their kilometres are not invoiced
+    backupAt: 0, backupAsk: 0 };                           // when a backup file was last saved, and when "Later" was last tapped
   let kept = true;                                         // false if the browser will not keep anything
   function load() {
     try {
@@ -11812,8 +11816,15 @@ if (typeof module === "object" && module.exports) module.exports = WorkTrackScan
         if (o.notes && typeof o.notes === "object") for (const [k, v] of Object.entries(o.notes)) if (typeof v === "string" && v) store.notes[k] = v.slice(0, 500);
         if (o.edits && typeof o.edits === "object") for (const [k, v] of Object.entries(o.edits)) { const c = T.clean(v); if (c && k in store.days) store.edits[k] = c; }
         takeRenames(o.renames);
+        takeCars(o.otherCar);
+        if (o.backupAt > 0) store.backupAt = +o.backupAt;
+        if (o.backupAsk > 0) store.backupAsk = +o.backupAsk;
       }
     } catch (e) { kept = false; }
+  }
+  function takeCars(o) {
+    if (!o || typeof o !== "object") return;
+    for (const [k, v] of Object.entries(o)) if (v === true) store.otherCar[k.slice(0, 60)] = true;
   }
   function takeRenames(o) {
     if (!o || typeof o !== "object") return;
@@ -11888,7 +11899,19 @@ if (typeof module === "object" && module.exports) module.exports = WorkTrackScan
   }
   const measured = (min) => (min >= 60 ? `${Math.floor(min / 60)} h ${min % 60} min` : `${min} min`);
   const hoursText = (h) => I.comma(h, 2);
-  const linesOf = (day) => I.buildLines(day, { roundMin: store.roundMin, places: day.example ? EXAMPLE_PLACES : store.places });
+  // A job driven in someone else's car: the drive itself is still invoiced (Körning, hours), the kilometres (Framkörning) are not.
+  const otherCar = (job) => Object.prototype.hasOwnProperty.call(store.otherCar, job || "");
+  const linesOf = (day) => {
+    const out = I.buildLines(day, { roundMin: store.roundMin, places: day.example ? EXAMPLE_PLACES : store.places });
+    out.driven = out.km;                                   // what was driven, whoever's car it was
+    if (day.example) return out;
+    const skipped = out.rows.filter((r) => r.kind === "km" && otherCar(r.project));
+    if (!skipped.length) return out;
+    out.skipped = skipped;
+    out.rows = out.rows.filter((r) => !(r.kind === "km" && otherCar(r.project)));
+    out.km = out.rows.filter((r) => r.kind === "km").reduce((s, r) => s + r.qty, 0);
+    return out;
+  };
 
   // ---- copying -----------------------------------------------------------
   async function copy(text, done) {
@@ -12002,6 +12025,10 @@ if (typeof module === "object" && module.exports) module.exports = WorkTrackScan
     if (day.summed) box.appendChild(el("p", "note", "This day had a great many stretches, so the watch added them up per job. Hours and kilometres are exact; the times of day are not."));
     else if (!day.hasPlaces && !day.edited && day.parts.some((p) => p.kind === "drive")) box.appendChild(el("p", "note", "This day was too long for the code to hold where each drive began and ended. Add the place names to the lines by hand."));
 
+    if (out.skipped) {
+      const jobs = [...new Set(out.skipped.map((r) => jobName(r.project)))], km = out.skipped.reduce((s, r) => s + r.qty, 0);
+      box.appendChild(el("p", "note", `Not your own car for ${jobs.join(", ")}: ${km} km are not on the invoice. The drive time is.`));
+    }
     const cols = el("div", "cols");
     cols.append(el("span", "", "Benämning"), el("span", "n", "Antal"), el("span", "", "Enhet"));
     box.appendChild(cols);
@@ -12122,7 +12149,7 @@ if (typeof module === "object" && module.exports) module.exports = WorkTrackScan
     card.append(el("span", "label", day === list[list.length - 1] ? "Newest day" : "Scanned just now"), head);
     const sum = (kind) => out.rows.filter((r) => r.kind === kind).reduce((s, r) => s + r.qty, 0);
     const tiles = el("div", "tiles three");
-    for (const [k, v, u] of [["Work", hoursText(sum("work")), "hours"], ["Drive", hoursText(sum("drive")), "hours"], ["Driven", String(out.km), "km"]]) {
+    for (const [k, v, u] of [["Work", hoursText(sum("work")), "hours"], ["Drive", hoursText(sum("drive")), "hours"], ["Driven", String(out.driven), out.skipped ? `km, ${out.km} to invoice` : "km"]]) {
       const tile = el("div", "tile"); tile.append(el("span", "k", k), el("span", "v", v), el("span", "u", u)); tiles.appendChild(tile);
     }
     card.appendChild(tiles);
@@ -12172,6 +12199,17 @@ if (typeof module === "object" && module.exports) module.exports = WorkTrackScan
     acts.appendChild(open);
     card.appendChild(acts);
     box.appendChild(card);
+    // Everything is kept on this phone only. After two weeks without a backup file, say so (once a week at most).
+    const now = Date.now(), DAY = 86400000;
+    if (list.length >= 3 && now - store.backupAt > 14 * DAY && now - store.backupAsk > 7 * DAY) {
+      const ask = el("div", "banner"), go2 = el("button", "btn small go", "Save a backup"), later = el("button", "btn small", "Later");
+      ask.id = "backupAskBar"; go2.type = later.type = "button";
+      ask.appendChild(el("span", "", store.backupAt ? `Your last backup file is ${Math.floor((now - store.backupAt) / DAY)} days old. Your days are kept on this phone only.` : "You have no backup file yet. Your days are kept on this phone only."));
+      go2.addEventListener("click", () => { go("more"); $("backupBox").open = true; goTo($("backupBox")); });
+      later.addEventListener("click", () => { store.backupAsk = Date.now(); save(); render(); });
+      const row = el("div", "acts-row"); row.append(go2, later); ask.appendChild(row);
+      box.appendChild(ask);
+    }
   }
 
   // ---- Days: the month as a calendar ------------------------------------------------
@@ -12907,6 +12945,19 @@ if (typeof module === "object" && module.exports) module.exports = WorkTrackScan
       const wrap = el("div"); wrap.append(form, el("p", "hint", "It changes on every day and every line. The watch keeps its own name, so days you scan later are renamed here too."));
       return wrap;
     };
+    // "I drove my own car": ticked unless you say otherwise. Unticked, the job's kilometres are left off every invoice line and sum.
+    const carSwitch = (j) => {
+      const wrap = el("div", "car"), lab = el("label", "check"), box = el("input");
+      box.type = "checkbox"; box.id = "car-" + jobs.indexOf(j); box.checked = !otherCar(j);
+      lab.htmlFor = box.id; lab.append(box, document.createTextNode(" I drove my own car"));
+      box.addEventListener("change", () => {
+        if (box.checked) delete store.otherCar[j]; else store.otherCar[j] = true;
+        marking = false; save(); render();
+        say("ok", box.checked ? `${jobName(j)}: kilometres are invoiced again.` : `${jobName(j)}: kilometres are not invoiced any more. The drive time still is.`);
+      });
+      wrap.append(lab, el("p", "hint", otherCar(j) ? "Someone else's car: no Framkörning (kilometres) for this job. Tick it if it was your car." : "Untick it if it was someone else's car: then no Framkörning (kilometres) is invoiced for this job."));
+      return wrap;
+    };
     const renameButton = (j) => { const b = el("button", "btn small", "Rename"); b.type = "button"; b.addEventListener("click", () => { renaming = j; render(); const i = $("retitle-" + jobs.indexOf(j)); if (i) { i.focus(); i.select(); } }); return b; };
     const info = $("invInfo");
     info.textContent = "";
@@ -12961,6 +13012,7 @@ if (typeof module === "object" && module.exports) module.exports = WorkTrackScan
         if (j) acts2.appendChild(renameButton(j));
         body.appendChild(acts2);
         if (renaming === j && j) body.appendChild(renameForm(j));
+        body.appendChild(carSwitch(j));
         box.appendChild(body);
       }
       ubox.appendChild(box);
@@ -12987,6 +13039,7 @@ if (typeof module === "object" && module.exports) module.exports = WorkTrackScan
         if (j) acts.appendChild(renameButton(j));
         body.append(acts, el("p", "hint", "Invoiced by mistake? Show the lines, then Mark as not invoiced."));
         if (renaming === j && j) body.appendChild(renameForm(j));
+        body.appendChild(carSwitch(j));
         box.appendChild(body);
       }
       sbox.appendChild(box);
@@ -13065,6 +13118,7 @@ if (typeof module === "object" && module.exports) module.exports = WorkTrackScan
     }
     for (const dayKey of openFrom) delete store.invoiced[dayKey + "|" + to];
     for (const x of store.extras) if (x.job === from) x.job = to;
+    if (otherCar(from)) { if (!merged) store.otherCar[to] = true; delete store.otherCar[from]; }     // the car goes with the job (a job it joins keeps its own)
     if (invJob === from) invJob = to;
     if (chartJob === from) chartJob = to;
     if (unsentOpen.delete(from)) unsentOpen.add(to);
@@ -13095,7 +13149,7 @@ if (typeof module === "object" && module.exports) module.exports = WorkTrackScan
     const earned = sum(priced, (r) => r.amount), done = sum(priced.filter((r) => store.invoiced[r.key]), (r) => r.amount);
     const tiles = $("moneyTiles");
     tiles.textContent = "";
-    for (const [k, v, u] of [["Work", I.comma(qty("work"), 2), "hours"], ["Drive", I.comma(qty("drive"), 2), "hours"], ["Driven", String(qty("km")), "km"],
+    for (const [k, v, u] of [["Work", I.comma(qty("work"), 2), "hours"], ["Drive", I.comma(qty("drive"), 2), "hours"], ["Driven", String(qty("km")), Object.keys(store.otherCar).length ? "km in my own car" : "km"],
       ["Earned", anyPrice ? kr(earned) : "–", "kr excl. moms"], ["Invoiced", anyPrice ? kr(done) : "–", "kr"], ["Not invoiced yet", anyPrice ? kr(earned - done) : "–", "kr"]]) {
       const tile = el("div", "tile"); tile.append(el("span", "k", k), el("span", "v", v), el("span", "u", u)); tiles.appendChild(tile);
     }
@@ -13211,7 +13265,10 @@ if (typeof module === "object" && module.exports) module.exports = WorkTrackScan
   // ---- backup ------------------------------------------------------------------------
   $("backupSave").addEventListener("click", async () => {
     const now = new Date(), name = `WorkTrack-backup-${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}.json`;
-    if (await giveFile(name, JSON.stringify({ worktrackBackup: 1, saved: now.toISOString(), ...store }), "application/json") !== "cancelled") say("ok", "Saved " + name + ". Keep it in Files or mail it to yourself.");
+    if (await giveFile(name, JSON.stringify({ worktrackBackup: 1, saved: now.toISOString(), ...store }), "application/json") !== "cancelled") {
+      store.backupAt = Date.now(); save(); render();
+      say("ok", "Saved " + name + ". Keep it in Files or mail it to yourself.");
+    }
   });
   $("backupFile").addEventListener("change", async (e) => {
     const f = e.target.files && e.target.files[0]; e.target.value = "";
@@ -13237,6 +13294,7 @@ if (typeof module === "object" && module.exports) module.exports = WorkTrackScan
     for (const [k, v] of Object.entries(o.invoiced || {})) if (typeof v === "string" && !(k in store.invoiced)) store.invoiced[k] = v;
     for (const [k, v] of Object.entries(o.notes || {})) if (typeof v === "string" && v && !store.notes[k]) store.notes[k] = v.slice(0, 500);
     takeRenames(o.renames);
+    takeCars(o.otherCar);
     if (o.articles && typeof o.articles === "object") for (const kind of ["drive", "km", "work"]) {
       const a = o.articles[kind], mine = store.articles[kind];
       if (a && typeof a === "object") { if (!mine.art && a.art) mine.art = String(a.art).slice(0, 12); if (!mine.price && a.price) mine.price = String(a.price).slice(0, 10); }
@@ -13424,7 +13482,7 @@ if (typeof module === "object" && module.exports) module.exports = WorkTrackScan
   $("copyAll").addEventListener("click", () => copy(days().map((d) => I.asText(linesOf(d).rows)).filter(Boolean).join("\n"), () => flash($("copyAll"), "Copied")));
 
   // ---- which version this is, and getting the next one --------------------------------
-  const APP = "9", BUILT = "24 Nov 2026";
+  const APP = "10", BUILT = "26 Nov 2026";
   $("aboutText").textContent = `WorkTrack Days, app ${APP}` + (BUILT.startsWith("__") ? "." : `, made ${BUILT}.`);
   $("updateNow").addEventListener("click", () => location.reload());
   $("updateCheck").hidden = true;
