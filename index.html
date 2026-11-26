@@ -416,7 +416,8 @@
   .rename { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; gap: 8px; align-items: end; }
   .rename .field { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
   .car { display: flex; flex-direction: column; gap: 4px; padding-top: 10px; border-top: 1px solid var(--rule); }
-  .car input { width: 22px; height: 22px; flex: none; }
+  .car input, .fix-form .check input { width: 22px; height: 22px; flex: none; }
+  .fix-form .check { text-transform: none; letter-spacing: 0; font-size: 17px; color: var(--ink); }
   .rename label { font: 600 13px var(--font-text); letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-soft); }
   .rename input[type="text"] { flex: none; width: 100%; }
   .ujob.sent .ujob-head .name, .ujob.sent .ujob-head .sum { color: var(--ink-soft); }
@@ -11592,7 +11593,9 @@ const WorkTrackInvoice = (() => {
     });
 
     const rows = [];
-    let hours = 0, km = 0, exactSecs = 0;
+    let hours = 0, km = 0, exactSecs = 0, driven = 0;
+    const skipped = [];                                      // kilometres left off: not driven in your own car
+    const theirs = (p) => (o.otherCar ? !!o.otherCar(p) : false);
     for (const g of groups) {
       const first = g.parts[0], last = g.parts[g.parts.length - 1];
       const from = r(first.from), to = r(last.to);
@@ -11601,18 +11604,22 @@ const WorkTrackInvoice = (() => {
       const h = net / 3600, gross = Math.max(0, to - from) / 3600;
       hours += h; exactSecs += exact;
       if (g.kind === "drive") {
-        const dist = Math.round(g.parts.reduce((s, p) => s + p.metres, 0) / 1000);
-        km += dist;
+        const all = Math.round(g.parts.reduce((s, p) => s + p.metres, 0) / 1000);
+        // only what was driven in your own car is invoiced as kilometres; the drive time always is
+        const mine = g.parts.filter((p) => !theirs(p));
+        const dist = mine.length === g.parts.length ? all : Math.round(mine.reduce((s, p) => s + p.metres, 0) / 1000);
+        driven += all; km += dist;
+        if (all - dist > 0) skipped.push({ project: g.project, qty: all - dist });
         rows.push({ kind: "drive", project: g.project, partIndex: g.index, at: first.from, qty: h, unit: "h", exactMin: Math.round(exact / 60), from: first.a, to: last.b,
           fromName: name(first.a, first.an), toName: name(last.b, last.bn), suggestTo: g.project,
-          text: `${ddmm(first.from)} ${hhmm(from)}-${hhmm(to)} ${o.driveWord} ${name(first.a, first.an)}-${name(last.b, last.bn)} ${plain(h)}h ${dist}km` });
-        rows.push({ kind: "km", project: g.project, partIndex: g.index, at: first.from, qty: dist, unit: "km", text: `${o.kmWord} ${dist}` });
+          text: `${ddmm(first.from)} ${hhmm(from)}-${hhmm(to)} ${o.driveWord} ${name(first.a, first.an)}-${name(last.b, last.bn)} ${plain(h)}h ${all}km` });
+        if (mine.length) rows.push({ kind: "km", project: g.project, partIndex: g.index, at: first.from, qty: dist, unit: "km", text: `${o.kmWord} ${dist}` });
       } else {
         rows.push({ kind: "work", project: g.project, partIndex: g.index, at: first.from, qty: h, unit: "h", exactMin: Math.round(exact / 60),
           text: `${ddmm(first.from)} ${o.workWord} ${plain(gross)}h ${hhmm(from)}-${hhmm(to)}` });
       }
     }
-    return { rows, hours, km, exactMin: Math.round(exactSecs / 60), date: ddmm(day.start), dayStart: day.start };
+    return { rows, hours, km, driven, skipped, exactMin: Math.round(exactSecs / 60), date: ddmm(day.start), dayStart: day.start };
   }
 
   // The rows as text to paste: description, quantity, unit - tabs between.
@@ -11649,6 +11656,7 @@ const WorkTrackTimeline = (() => {
     metres: p.kind === "drive" ? hecto(+p.metres || 0) : 0, a: p.kind === "drive" ? point(p.a) : null, b: p.kind === "drive" ? point(p.b) : null,
     an: p.kind === "drive" ? String(p.an || "").slice(0, 40) : "", bn: p.kind === "drive" ? String(p.bn || "").slice(0, 40) : "",
     route: p.kind === "drive" && Array.isArray(p.route) ? p.route.map(point).filter(Boolean) : [],        // the points the watch noted on the way
+    car: p.kind === "drive" && (p.car === "own" || p.car === "other") ? p.car : "",                        // whose car, when it is not what the job says
     hr: p.hr > 0 && p.hr <= 255 ? Math.round(p.hr) : 0 });                                               // its average heart rate, 0 = not known
 
   // Take the time from..to out of the day. A stretch that sticks out on both
@@ -11901,15 +11909,11 @@ if (typeof module === "object" && module.exports) module.exports = WorkTrackScan
   const hoursText = (h) => I.comma(h, 2);
   // A job driven in someone else's car: the drive itself is still invoiced (Körning, hours), the kilometres (Framkörning) are not.
   const otherCar = (job) => Object.prototype.hasOwnProperty.call(store.otherCar, job || "");
+  // One drive can say otherwise than its job: "own" or "other" on the drive itself wins.
+  const theirCar = (part) => (part.car ? part.car === "other" : otherCar(part.project));
   const linesOf = (day) => {
-    const out = I.buildLines(day, { roundMin: store.roundMin, places: day.example ? EXAMPLE_PLACES : store.places });
-    out.driven = out.km;                                   // what was driven, whoever's car it was
-    if (day.example) return out;
-    const skipped = out.rows.filter((r) => r.kind === "km" && otherCar(r.project));
-    if (!skipped.length) return out;
-    out.skipped = skipped;
-    out.rows = out.rows.filter((r) => !(r.kind === "km" && otherCar(r.project)));
-    out.km = out.rows.filter((r) => r.kind === "km").reduce((s, r) => s + r.qty, 0);
+    const out = I.buildLines(day, { roundMin: store.roundMin, places: day.example ? EXAMPLE_PLACES : store.places, otherCar: day.example ? null : theirCar });
+    if (!out.skipped.length) delete out.skipped;           // (kilometres left off; out.driven is what was driven, whoever's car it was)
     return out;
   };
 
@@ -12171,7 +12175,7 @@ if (typeof module === "object" && module.exports) module.exports = WorkTrackScan
           const li = el("li"), b = el("button", "tl-row " + r.kind); b.type = "button";
           const word = el("span", "word"); word.append(el("i"), KIND[r.kind]);
           const what = r.kind === "pause" ? measured(Math.round((r.to - r.from) / 60))
-            : (r.kind === "drive" ? `${place(r.part.a, r.part.an)} → ${place(r.part.b, r.part.bn)} · ${kmText(r.part.metres)} km · for ${jobName(r.part.project)}` : jobName(r.part.project)) + bpm(r.part.hr);
+            : (r.kind === "drive" ? `${place(r.part.a, r.part.an)} → ${place(r.part.b, r.part.bn)} · ${kmText(r.part.metres)} km · for ${jobName(r.part.project)}` + (theirCar(r.part) ? " · not my car" : "") : jobName(r.part.project)) + bpm(r.part.hr);
           b.append(el("span", "when", `${clock(day, r.from)}–${clock(day, r.to)}`), word, el("span", "what", what));
           b.addEventListener("click", () => {             // straight to the form that changes this row
             fixing = r.kind === "pause" ? { key: day.key, what: "pause", before: r.before } : { key: day.key, what: "part", index: r.index };
@@ -12299,7 +12303,7 @@ if (typeof module === "object" && module.exports) module.exports = WorkTrackScan
         const li = el("li", on ? "on" : ""), b = el("button", "tl-row " + r.kind);
         b.type = "button"; b.setAttribute("aria-expanded", on ? "true" : "false");
         const word = el("span", "word"); word.append(el("i"), KIND[r.kind]);
-        const what = r.kind === "pause" ? measured(Math.round((r.to - r.from) / 60)) : jobName(r.part.project) + (r.kind === "drive" ? ` · ${kmText(r.part.metres)} km` : "") + bpm(r.part.hr);
+        const what = r.kind === "pause" ? measured(Math.round((r.to - r.from) / 60)) : jobName(r.part.project) + (r.kind === "drive" ? ` · ${kmText(r.part.metres)} km` + (theirCar(r.part) ? " · not my car" : "") : "") + bpm(r.part.hr);
         b.append(el("span", "when", `${clock(day, r.from)}–${clock(day, r.to)}`), word, el("span", "what", what));
         b.addEventListener("click", () => {
           fixing = on ? null : r.kind === "pause" ? { key: day.key, what: "pause", before: r.before } : { key: day.key, what: "part", index: r.index };
@@ -12381,8 +12385,17 @@ if (typeof module === "object" && module.exports) module.exports = WorkTrackScan
     const placeList = [...new Set(store.places.map((p) => p.name))], placeOpts = { none: "Not known", other: "Another place…", hint: "Type the place", max: 40 };
     const aIn = picker(id("a"), placeList, part ? shown(part.a, part.an) : "", placeOpts), bIn = picker(id("b"), placeList, part ? shown(part.b, part.bn) : "", placeOpts);
     const jobF = field("Job", jobIn.sel, true, jobIn.box), kmF = field("Kilometres", kmIn, true), aF = field("From place", aIn.sel, false, aIn.box), bF = field("To place", bIn.sel, false, bIn.box);
-    form.append(field("From", fromIn), field("To", toIn), jobF, kmF, aF, bF);
-    const show = () => { jobF.hidden = kind === "pause"; kmF.hidden = aF.hidden = bF.hidden = kind !== "drive"; };
+    // whose car: ticked or not as the job says, unless this drive was different
+    const carF = el("div", "field wide"), carLab = el("label", "check"), carIn = el("input");
+    carIn.type = "checkbox"; carIn.id = id("car"); carLab.htmlFor = carIn.id;
+    carIn.checked = part && part.kind === "drive" ? !theirCar(part) : !otherCar(jobIn.get());
+    let carTouched = false;
+    carIn.addEventListener("change", () => { carTouched = true; });
+    jobIn.sel.addEventListener("change", () => { if (!carTouched) carIn.checked = !otherCar(jobIn.get()); });
+    carLab.append(carIn, document.createTextNode(" I drove my own car"));
+    carF.append(carLab, el("small", "hint", "Untick it if this drive was in someone else's car: then its kilometres are not invoiced."));
+    form.append(field("From", fromIn), field("To", toIn), jobF, kmF, aF, bF, carF);
+    const show = () => { jobF.hidden = kind === "pause"; kmF.hidden = aF.hidden = bF.hidden = carF.hidden = kind !== "drive"; };
     show();
 
     const acts = el("div", "acts wide");
@@ -12444,6 +12457,7 @@ if (typeof module === "object" && module.exports) module.exports = WorkTrackScan
         };
         [next.a, next.an] = end(aIn.get(), old ? old.a : null);
         [next.b, next.bn] = end(bIn.get(), old ? old.b : null);
+        if (carIn.checked === otherCar(next.project)) next.car = carIn.checked ? "own" : "other";      // only when it is not what the job says
       }
       setParts(day, T.put(parts, next), `${KIND[kind]} ${span} ${f.what === "new" ? "added" : "saved"}.` + (taken >= 60 ? ` It took the place of ${measured(Math.round(taken / 60))} counted before.` : ""));
     });
@@ -12955,7 +12969,7 @@ if (typeof module === "object" && module.exports) module.exports = WorkTrackScan
         marking = false; save(); render();
         say("ok", box.checked ? `${jobName(j)}: kilometres are invoiced again.` : `${jobName(j)}: kilometres are not invoiced any more. The drive time still is.`);
       });
-      wrap.append(lab, el("p", "hint", otherCar(j) ? "Someone else's car: no Framkörning (kilometres) for this job. Tick it if it was your car." : "Untick it if it was someone else's car: then no Framkörning (kilometres) is invoiced for this job."));
+      wrap.append(lab, el("p", "hint", otherCar(j) ? "Someone else's car: no Framkörning (kilometres) for this job. One drive in your own car? Open the day, Fix the times, tap the drive." : "Untick it if it was someone else's car: then no Framkörning (kilometres) for this job. One drive only? Open the day, Fix the times, tap the drive."));
       return wrap;
     };
     const renameButton = (j) => { const b = el("button", "btn small", "Rename"); b.type = "button"; b.addEventListener("click", () => { renaming = j; render(); const i = $("retitle-" + jobs.indexOf(j)); if (i) { i.focus(); i.select(); } }); return b; };
@@ -13482,7 +13496,7 @@ if (typeof module === "object" && module.exports) module.exports = WorkTrackScan
   $("copyAll").addEventListener("click", () => copy(days().map((d) => I.asText(linesOf(d).rows)).filter(Boolean).join("\n"), () => flash($("copyAll"), "Copied")));
 
   // ---- which version this is, and getting the next one --------------------------------
-  const APP = "10", BUILT = "26 Nov 2026";
+  const APP = "11", BUILT = "26 Nov 2026";
   $("aboutText").textContent = `WorkTrack Days, app ${APP}` + (BUILT.startsWith("__") ? "." : `, made ${BUILT}.`);
   $("updateNow").addEventListener("click", () => location.reload());
   $("updateCheck").hidden = true;
